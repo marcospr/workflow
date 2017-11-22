@@ -3,23 +3,21 @@ package diagram;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
 import javafx.stage.Stage;
 
 public class ApplicationView {
-	private Path path;
+	// private Path path;
 	private RootContainer pane;
 	private Line connection;
 	private Scene scene;
 	private Stage stage;
 
-	public ApplicationView(final Stage stage, final Scene scene, final RootContainer pane,
-			final Path path) {
+	public ApplicationView(final Stage stage, final Scene scene, final RootContainer pane) {
 		super();
 		this.stage = stage;
 		this.scene = scene;
 		this.pane = pane;
-		this.path = path;
+		// this.path = path;
 	}
 
 	public ApplicationView() {}
@@ -32,14 +30,6 @@ public class ApplicationView {
 				pane.getChildren().add(node);
 			}
 		}
-	}
-
-	public Path getPath() {
-		return path;
-	}
-
-	public void setPath(final Path path) {
-		this.path = path;
 	}
 
 	public RootContainer getPane() {

@@ -5,7 +5,7 @@ import diagram.ApplicationViewBuilder;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-public class LineArrow extends Application {
+public class MainApplication extends Application {
 	ApplicationView applicationView;
 
 	public static void main(final String[] args) {

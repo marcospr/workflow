@@ -1,8 +1,6 @@
 package diagram;
 
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Path;
 import javafx.stage.Stage;
 
 public class ApplicationViewBuilder {
@@ -23,26 +21,26 @@ public class ApplicationViewBuilder {
 
 		stage.setScene(scene);
 
-		ApplicationView view = new ApplicationView(stage, scene, rootContainer, createPath());
+		ApplicationView view = new ApplicationView(stage, scene, rootContainer);
 
 		// create rectangle
 
-		ProcessoBuilder processoBuilder = new ProcessoBuilder();
-		Processo p1 = processoBuilder.comTranslateX(1).comTranslateY(90).builder();
-		Processo p2 = processoBuilder.comTranslateX(1).comTranslateY(180).builder();
+		// ProcessoBuilder processoBuilder = new ProcessoBuilder();
+		// Processo p1 = processoBuilder.comTranslateX(1).comTranslateY(90).builder();
+		// Processo p2 = processoBuilder.comTranslateX(1).comTranslateY(180).builder();
 
-		Connection conn = new Connection(p1, p2);
-		view.addAllPane(view.getPath(), p1, p2, conn);
+		// Connection conn = new Connection(p1, p2);
+		// view.addAllPane(view.getPath(), p1, p2, conn);
 
 		return view;
 	}
 
-	private Path createPath() {
-		Path path = new Path();
-		path.setStrokeWidth(1);
-		path.setStroke(Color.BLACK);
-		return path;
-	}
+	// private Path createPath() {
+	// Path path = new Path();
+	// path.setStrokeWidth(1);
+	// path.setStroke(Color.BLACK);
+	// return path;
+	// }
 
 	public Stage getStage() {
 		return stage;
