@@ -1,7 +1,9 @@
-package diagram;
+package view.builder;
 
+import diagram.RootContainer;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import view.ui.ApplicationView;
 
 public class ApplicationViewBuilder {
 
@@ -22,15 +24,6 @@ public class ApplicationViewBuilder {
 		stage.setScene(scene);
 
 		ApplicationView view = new ApplicationView(stage, scene, rootContainer);
-
-		// create rectangle
-
-		// ProcessoBuilder processoBuilder = new ProcessoBuilder();
-		// Processo p1 = processoBuilder.comTranslateX(1).comTranslateY(90).builder();
-		// Processo p2 = processoBuilder.comTranslateX(1).comTranslateY(180).builder();
-
-		// Connection conn = new Connection(p1, p2);
-		// view.addAllPane(view.getPath(), p1, p2, conn);
 
 		return view;
 	}

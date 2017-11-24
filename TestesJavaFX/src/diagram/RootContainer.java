@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import diagram.builder.ProcessoBuilder;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
@@ -20,13 +21,17 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import model.ConstantsSystem;
+import model.CoordinatesMouseXY;
 
 public class RootContainer extends BorderPane {
 	private CoordinatesMouseXY coordinatesMouse;
 	// private Processo processoHelper;
 	private Processo startProcess;
 	private Processo endProcess;
+	private Start start;
 	private Set<Node> selectNodes = new HashSet<>();
 
 	public RootContainer() {
@@ -49,7 +54,7 @@ public class RootContainer extends BorderPane {
 		Button btnEnd = new Button("End", new ImageView(imageEnd));
 		btnEnd.setContentDisplay(ContentDisplay.BOTTOM);
 
-		Button btnArrow = new Button("Conector", new ImageView(imageArrow));
+		Button btnArrow = new Button("SHIT + drag/drop", new ImageView(imageArrow));
 		btnArrow.setContentDisplay(ContentDisplay.BOTTOM);
 
 		ToolBar toolBar1 = new ToolBar();
@@ -61,86 +66,81 @@ public class RootContainer extends BorderPane {
 		// handlers Pane
 
 		setOnMousePressed(mouseEvent -> {
-			if (mouseEvent.isShiftDown()) {
-				setCursor(Cursor.HAND);
-				startProcess = getProcessoFromCoordinatesXY(mouseEvent);
-				endProcess = null;
-			}
+			setCursor(Cursor.HAND);
+			startProcess = getProcessoFromCoordinatesXY(mouseEvent);
+			endProcess = null;
+			unselectNode();
+			selectNode(startProcess);
+
 		});
 
 		setOnMouseDragged(mouseEvent -> {
-			if (mouseEvent.isShiftDown()) {
-				// ????
-			}
+			Processo lastProcessClicked = getProcessoFromCoordinatesXY(mouseEvent);
+			changeConnection(lastProcessClicked);
 		});
 
 		setOnMouseReleased(mouseEvent -> {
-			endProcess = getProcessoFromCoordinatesXY(mouseEvent);
+			Processo lastProcessClicked = getProcessoFromCoordinatesXY(mouseEvent);
 			if (mouseEvent.isShiftDown()) {
-
-				if (startProcess != null && endProcess != null) {
-					// Cria Arrow
-					if (!connectionExists(startProcess, endProcess)) {
-						Connection conn = new Connection(startProcess, endProcess);
-						getChildren().add(0, conn);
-						getChildren().add(conn.getArrow());
-					}
-				}
-			} else {
-				if (endProcess != null) {
-					Connection connectionCurrent = null;
-					Set<Connection> connections = endProcess.getConnections();
-					for (Connection connection : connections) {
-						if (connection.getEndRectangle().equals(endProcess)) {
-							connectionCurrent = connection;
-							getChildren().remove(connectionCurrent.getArrow());
-							connectionCurrent.setArrow(new Arrow(startProcess, endProcess));
-							getChildren().add(connectionCurrent.getArrow());
-							break;
+				endProcess = lastProcessClicked;
+				if (startProcess != null && endProcess != null && !startProcess.equals(endProcess)
+						&& !startProcess.equals(endProcess.getNext())) {
+					if (startProcess.getNext() == null) {
+						// Cria Arrow
+						if (!connectionExists(startProcess, endProcess)) {
+							createConnection();
 						}
 					}
 				}
+			} else {
+				endProcess = lastProcessClicked;
+				if (startProcess != null && endProcess != null) {
+					changeConnection(endProcess);
+				}
 			}
+
 			setCursor(Cursor.DEFAULT);
 		});
 
 		setOnMouseClicked(mouseEvent -> {
 			if (!mouseEvent.isControlDown()) {
 				// Limpo qualquer seleção anterior
-				ObservableList<Node> nodes = getChildren();
-				for (Node node : nodes) {
-					if (node instanceof Selectable) {
-						Selectable s = (Selectable) node;
-						if (s.isSelect()) {
-							selectNodes = new HashSet<>();
-							node.setEffect(null);
-							s.setSelect(Boolean.FALSE);
-						}
-					}
-				}
+				unselectNode();
 			}
 
 			// Seleciono o Node atual das coordenadas XY
 			Node node = getNodeFromCoordinatesXY(mouseEvent);
-			if (node != null) {
-				if (node instanceof Selectable) {
-					node.setEffect(new DropShadow(20, Color.DEEPSKYBLUE));
-					((Selectable) node).setSelect(Boolean.TRUE);
-					selectNodes.add(node);
-				}
-			}
+			selectNode(node);
 		});
 
 		// Keys Pane
 		setOnKeyPressed(keyEvent -> {
 			if (keyEvent.getCode().equals(KeyCode.DELETE)) {
-				for (Node nodeSelect : selectNodes) {
-					getChildren().remove(nodeSelect);
+				if (selectNodes != null) {
+					for (Node nodeSelect : selectNodes) {
+						getChildren().remove(nodeSelect);
+						if (nodeSelect instanceof Processo) {
+							for (Connection connection : getConnectionsFromContainer()) {
+								if (connection.getStartProcess().equals(nodeSelect)
+										|| connection.getEndProcess().equals(nodeSelect)) {
+									removeConnection(connection);
+								}
+							}
+						} else if (nodeSelect instanceof Connection) {
+							Connection connection = (Connection) nodeSelect;
+							removeConnection(connection);
+						} else if (nodeSelect instanceof Circle) {// start workflow
+
+						} else if (nodeSelect instanceof Circle) {// end workflow
+
+						}
+					}
+					selectNodes = new HashSet<>();
 				}
 			}
 		});
 
-		// Handlers Button Arrow
+		// Handlers
 
 		// Handlers Button Process
 		btnProcess.setOnMousePressed(mouseEvent -> {
@@ -168,36 +168,99 @@ public class RootContainer extends BorderPane {
 		});
 
 		btnProcess.setOnMouseReleased(mouseEvent -> {
-			verifyBoundsContainer(mouseEvent);
 			setCursor(Cursor.DEFAULT);
+		});
 
+		// Handlers Button Start
+
+		btnStart.setOnMousePressed(mouseEvent -> {
+			setCursor(Cursor.HAND);
+			coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
+			coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
+
+			start = new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
+			getChildren().add(start);
+
+		});
+
+		btnStart.setOnMouseDragged(mouseEvent -> {
+			double offsetX = mouseEvent.getSceneX() - coordinatesMouse.getStartSceneX();
+			double offsetY = mouseEvent.getSceneY() - coordinatesMouse.getStartSceneY();
+
+			start.setCenterX(start.getCenterX() + offsetX);
+			start.setCenterY(start.getCenterY() + offsetY);
+		});
+
+		btnStart.setOnMouseReleased(mouseEvent -> {
+			setCursor(Cursor.DEFAULT);
 		});
 
 	}
 
-	private void verifyBoundsContainer(final MouseEvent mouseEvent) {
-		double mouseSceneX = mouseEvent.getSceneX();
-		double mouseSceneY = mouseEvent.getSceneY();
+	private void removeConnection(Connection connection) {
+		getChildren().remove(connection);
+		getChildren().remove(connection.getArrow());
+		connection.getStartProcess().setNext(null);
+		connection.setStartProcess(null);
+		connection.setEndProcess(null);
+		connection.setArrow(null);
+		connection = null;
+	}
 
-		if (mouseSceneX < 0) {
-			mouseSceneX = 1;
-			startProcess.setTranslateX(mouseSceneX);
+	private void unselectNode() {
+		for (Node node : selectNodes) {
+			if (node instanceof Selectable) {
+				node.setEffect(null);
+				((Selectable) node).setSelect(Boolean.FALSE);
+			}
+		}
+		selectNodes = new HashSet<>();
+	}
+
+	private void selectNode(final Node node) {
+		if (node != null) {
+			if (node instanceof Selectable) {
+				node.setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+				((Selectable) node).setSelect(Boolean.TRUE);
+				selectNodes.add(node);
+			}
+		}
+	}
+
+	private void createConnection() {
+		Connection conn = new Connection(startProcess, endProcess);
+
+		getChildren().add(0, conn);
+		getChildren().add(conn.getArrow());
+	}
+
+	private void changeConnection(final Processo lastProcessClicked) {
+
+		if (lastProcessClicked != null) {
+
+			List<Connection> allConnections = getConnectionsFromContainer();
+
+			for (Connection connection : allConnections) {
+				if (connection.getStartProcess().equals(lastProcessClicked)
+						|| connection.getEndProcess().equals(lastProcessClicked)) {
+
+					// startProcess = connection.getStartProcess();
+					// endProcess = connection.getEndProcess();
+
+					// getChildren().remove(connection);
+
+					connection.recalculateXY();
+
+					// getChildren().add(connection);
+
+					getChildren().remove(connection.getArrow());
+					Arrow arrow = new Arrow(connection);
+					connection.setArrow(arrow);
+					getChildren().add(connection.getArrow());
+				}
+			}
 		}
 
-		if (mouseSceneY < 0) {
-			mouseSceneY = 1;
-			startProcess.setTranslateY(mouseSceneY);
-		}
-
-		if (mouseSceneX > ConstantsSystem.WIDTH_SCENE) {
-			mouseSceneX = ConstantsSystem.WIDTH_SCENE - ConstantsSystem.WIDTH_RECTANGLE;
-			startProcess.setTranslateX(mouseSceneX);
-		}
-
-		if (mouseSceneY > ConstantsSystem.HEIGHT_SCENE) {
-			mouseSceneY = ConstantsSystem.HEIGHT_SCENE - ConstantsSystem.HEIGHT_RECTANGLE;
-			startProcess.setTranslateY(mouseSceneY);
-		}
 	}
 
 	public Processo getProcessoFromCoordinatesXY(final MouseEvent mouseEvent) {
@@ -223,8 +286,8 @@ public class RootContainer extends BorderPane {
 		boolean result = false;
 		List<Connection> connections = getConnectionsFromContainer();
 		for (Connection connection : connections) {
-			result = connection.getStartRectangle().equals(startProcess)
-					&& connection.getEndRectangle().equals(endProcess);
+			result = connection.getStartProcess().equals(startProcess)
+					&& connection.getEndProcess().equals(endProcess);
 			break;
 
 		}

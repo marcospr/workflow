@@ -1,19 +1,21 @@
 package diagram;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import model.ConstantsSystem;
+import model.CoordinatesMouseXY;
+import model.CoordinatesXY;
 
-public class Processo extends Rectangle implements Selectable {
+public class Processo extends Rectangle implements Selectable, ConnectionPoints {
 	private CoordinatesMouseXY coordinatesMouse;
 	private Boolean select;
-	private Set<Connection> connections = new HashSet<>();
+	private Processo next;
 
 	public Processo(final double X, final double Y) {
 		super(ConstantsSystem.WIDTH_RECTANGLE, ConstantsSystem.HEIGHT_RECTANGLE);
@@ -38,17 +40,17 @@ public class Processo extends Rectangle implements Selectable {
 
 	}
 
-	public boolean addConnection(final Connection connection) {
-		return connections.add(connection);
-	}
-
-	public boolean removeConnection(final Connection connection) {
-		return connections.remove(connection);
-	}
-
-	public Set<Connection> getConnections() {
-		return connections;
-	}
+	// public boolean addConnection(final Connection connection) {
+	// return connections.add(connection);
+	// }
+	//
+	// public boolean removeConnection(final Connection connection) {
+	// return connections.remove(connection);
+	// }
+	//
+	// public Set<Connection> getConnections() {
+	// return connections;
+	// }
 
 	@Override
 	public boolean isSelect() {
@@ -77,8 +79,10 @@ public class Processo extends Rectangle implements Selectable {
 			double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
 			double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
 
-			((Rectangle) mouseEvent.getSource()).setTranslateX(endTranslateX);
-			((Rectangle) mouseEvent.getSource()).setTranslateY(endTranslateY);
+			Rectangle rectangle = (Rectangle) mouseEvent.getSource();
+
+			rectangle.setTranslateX(endTranslateX);
+			rectangle.setTranslateY(endTranslateY);
 		}
 	};
 
@@ -107,5 +111,38 @@ public class Processo extends Rectangle implements Selectable {
 			getParent().setCursor(Cursor.DEFAULT);
 		}
 	};
+
+	@Override
+	public CoordinatesXY getPoint0() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX(), bounds.getMinY() + bounds.getHeight() / 2);
+	}
+
+	@Override
+	public CoordinatesXY getPoint1() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMaxY());
+
+	}
+
+	@Override
+	public CoordinatesXY getPoint2() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMaxX(), bounds.getMinY() + bounds.getHeight() / 2);
+	}
+
+	@Override
+	public CoordinatesXY getPoint3() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY());
+	}
+
+	public Processo getNext() {
+		return next;
+	}
+
+	public void setNext(final Processo next) {
+		this.next = next;
+	}
 
 }

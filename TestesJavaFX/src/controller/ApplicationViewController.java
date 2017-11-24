@@ -1,7 +1,9 @@
-package diagram;
+package controller;
 
+import diagram.RootContainer;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import view.ui.ApplicationView;
 
 public class ApplicationViewController {
 	// private Path path;

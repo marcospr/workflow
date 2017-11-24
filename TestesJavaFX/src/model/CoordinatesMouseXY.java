@@ -1,4 +1,4 @@
-package diagram;
+package model;
 
 public class CoordinatesMouseXY {
 	private double startSceneX, startSceneY;

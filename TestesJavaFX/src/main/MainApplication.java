@@ -1,9 +1,9 @@
 package main;
 
-import diagram.ApplicationView;
-import diagram.ApplicationViewBuilder;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import view.builder.ApplicationViewBuilder;
+import view.ui.ApplicationView;
 
 public class MainApplication extends Application {
 	ApplicationView applicationView;

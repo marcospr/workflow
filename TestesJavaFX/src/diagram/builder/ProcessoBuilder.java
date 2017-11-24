@@ -1,37 +1,39 @@
-package diagram;
+package diagram.builder;
 
 import java.security.InvalidParameterException;
 import java.text.MessageFormat;
 
-public class ProcessoBuilder {
-	private double X;
-	private double Y;
+import diagram.Processo;
 
-	private static final double DEFAULT_DAOBLE_VALUE = 0.0d;
+public class ProcessoBuilder {
+	private double x;
+	private double y;
+
+	private static final double DEFAULT_DOUBLE_VALUE = 0.0d;
 	private static final String MESSAGE_PARAMETER_INVALID = "Parametro {0} invalido, verifique.";
 
 	public ProcessoBuilder() {}
 
 	public Processo builder() {
-		if (X == DEFAULT_DAOBLE_VALUE) {
+		if (x == DEFAULT_DOUBLE_VALUE) {
 			throw new InvalidParameterException(
 					MessageFormat.format(MESSAGE_PARAMETER_INVALID, "Translate X"));
 		}
-		if (Y == DEFAULT_DAOBLE_VALUE) {
+		if (y == DEFAULT_DOUBLE_VALUE) {
 			throw new InvalidParameterException(
 					MessageFormat.format(MESSAGE_PARAMETER_INVALID, "Translate Y"));
 		}
-		return new Processo(X, Y);
+		return new Processo(x, y);
 
 	}
 
 	public ProcessoBuilder comTranslateX(final double X) {
-		this.X = X;
+		x = X;
 		return this;
 	}
 
 	public ProcessoBuilder comTranslateY(final double Y) {
-		this.Y = Y;
+		y = Y;
 		return this;
 	}
 

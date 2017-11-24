@@ -1,5 +1,7 @@
-package diagram;
+package view.ui;
 
+import diagram.Connection;
+import diagram.RootContainer;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.shape.Line;
