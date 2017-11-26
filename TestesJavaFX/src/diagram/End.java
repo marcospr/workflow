@@ -9,12 +9,12 @@ import model.ConstantsSystem;
 import model.CoordinatesMouseXY;
 import model.CoordinatesXY;
 
-public class Start extends Circle implements Diagram {
+public class End extends Circle implements Diagram {
 	private Diagram next;
 	private Boolean select;
 	private CoordinatesMouseXY coordinatesMouse;
 
-	public Start(final double x, final double y, final double radius) {
+	public End(final double x, final double y, final double radius) {
 		super();
 		setCenterX(x);
 		setCenterY(y);

@@ -1,42 +1,44 @@
 package diagram;
 
 import helper.CalculatorCoordinatesHelper;
+import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import model.CoordinatesXY;
 import model.CoordinatesXYInitialFinal;
 
-public class Connection extends Line implements Selectable {
+public class Connection extends Line implements Diagram {
 	private Boolean select;
-	private Processo startProcess;
-	private Processo endProcess;
+	private Diagram startDiagram;
+	private Diagram endDiagram;
 	private Arrow arrow;
 
-	public Connection(final Processo startProcess, final Processo endProcess) {
+	public Connection(final Diagram startDiagram, final Diagram endDiagram) {
 		select = Boolean.FALSE;
-		this.startProcess = startProcess;
-		this.endProcess = endProcess;
-		this.startProcess.setNext(this.endProcess);
+		this.startDiagram = startDiagram;
+		this.endDiagram = endDiagram;
+		this.startDiagram.setNext(this.endDiagram);
 		setStroke(Color.BLACK);
 		setStrokeWidth(1);
 
 		// Tira o contorno de efeito
-		if (startProcess.isSelect()) {
-			startProcess.setEffect(null);
+		if (startDiagram.isSelect()) {
+			((Node) startDiagram).setEffect(null);
 		}
-		if (endProcess.isSelect()) {
-			endProcess.setEffect(null);
+		if (endDiagram.isSelect()) {
+			((Node) endDiagram).setEffect(null);
 		}
 
-		CoordinatesXYInitialFinal coordinates =
-				CalculatorCoordinatesHelper.calculatePointsXY(startProcess, endProcess);
+		CoordinatesXYInitialFinal coordinates = CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
-		if (startProcess.isSelect()) {
-			startProcess.setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+		if (startDiagram.isSelect()) {
+			((Node) startDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
 		}
-		if (endProcess.isSelect()) {
-			endProcess.setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+		if (endDiagram.isSelect()) {
+			((Node) endDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
 		}
 
 		setStartX(coordinates.getInitialX());
@@ -56,22 +58,21 @@ public class Connection extends Line implements Selectable {
 
 	public void recalculateXY() {
 		// Tira o contorno de efeito
-		if (startProcess.isSelect()) {
-			startProcess.setEffect(null);
+		if (startDiagram.isSelect()) {
+			((Node) startDiagram).setEffect(null);
 		}
-		if (endProcess.isSelect()) {
-			endProcess.setEffect(null);
+		if (endDiagram.isSelect()) {
+			((Node) endDiagram).setEffect(null);
 		}
 
-		CoordinatesXYInitialFinal coordinates =
-				CalculatorCoordinatesHelper.calculatePointsXY(startProcess, endProcess);
+		CoordinatesXYInitialFinal coordinates = CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
-		if (startProcess.isSelect()) {
-			startProcess.setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+		if (startDiagram.isSelect()) {
+			((Node) startDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
 		}
-		if (endProcess.isSelect()) {
-			endProcess.setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+		if (endDiagram.isSelect()) {
+			((Node) endDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
 		}
 
 		setStartX(coordinates.getInitialX());
@@ -98,20 +99,57 @@ public class Connection extends Line implements Selectable {
 		this.arrow = arrow;
 	}
 
-	public Processo getStartProcess() {
-		return startProcess;
+	public Diagram getStartDiagram() {
+		return startDiagram;
 	}
 
-	public void setStartProcess(final Processo startProcess) {
-		this.startProcess = startProcess;
+	public void setStartDiagram(final Diagram startDiagram) {
+		this.startDiagram = startDiagram;
 	}
 
-	public Processo getEndProcess() {
-		return endProcess;
+	public Diagram getEndDiagram() {
+		return endDiagram;
 	}
 
-	public void setEndProcess(final Processo endProcess) {
-		this.endProcess = endProcess;
+	public void setEndNode(final Diagram endDiagram) {
+		this.endDiagram = endDiagram;
+	}
+
+	@Override
+	public CoordinatesXY getPoint0() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX(), bounds.getMinY() + bounds.getHeight() / 2);
+	}
+
+	@Override
+	public CoordinatesXY getPoint1() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMaxY());
+
+	}
+
+	@Override
+	public CoordinatesXY getPoint2() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMaxX(), bounds.getMinY() + bounds.getHeight() / 2);
+	}
+
+	@Override
+	public CoordinatesXY getPoint3() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY());
+	}
+
+	@Override
+	public Diagram getNext() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setNext(Diagram diagram) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

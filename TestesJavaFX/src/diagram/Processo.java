@@ -12,10 +12,10 @@ import model.ConstantsSystem;
 import model.CoordinatesMouseXY;
 import model.CoordinatesXY;
 
-public class Processo extends Rectangle implements Selectable, ConnectionPoints {
+public class Processo extends Rectangle implements Diagram {
 	private CoordinatesMouseXY coordinatesMouse;
 	private Boolean select;
-	private Processo next;
+	private Diagram next;
 
 	public Processo(final double X, final double Y) {
 		super(ConstantsSystem.WIDTH_RECTANGLE, ConstantsSystem.HEIGHT_RECTANGLE);
@@ -137,11 +137,13 @@ public class Processo extends Rectangle implements Selectable, ConnectionPoints 
 		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY());
 	}
 
-	public Processo getNext() {
+	@Override
+	public Diagram getNext() {
 		return next;
 	}
 
-	public void setNext(final Processo next) {
+	@Override
+	public void setNext(final Diagram next) {
 		this.next = next;
 	}
 
