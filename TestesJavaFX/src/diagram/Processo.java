@@ -8,11 +8,9 @@ import model.ConstantsSystem;
 
 public class Processo extends Rectangle {
 
-	public Processo(final double X, final double Y) {
+	public Processo() {
 		super(ConstantsSystem.WIDTH_RECTANGLE, ConstantsSystem.HEIGHT_RECTANGLE);
 		setId(UUID.randomUUID().toString());
-		setTranslateX(X);
-		setTranslateY(Y);
 		// preenchimento
 		setFill(Color.WHITE);
 		// borda

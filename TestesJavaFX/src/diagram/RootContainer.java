@@ -6,11 +6,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import diagram.builder.ProcessoBuilder;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -97,8 +97,8 @@ public class RootContainer extends BorderPane {
 		btnArrow.setContentDisplay(ContentDisplay.BOTTOM);
 
 		ToolBar toolBar1 = new ToolBar();
-		toolBar1.getItems().addAll(new Separator(), btnProcessGAS, btnProcessGS, btnStart, btnEnd,
-				btnArrow, new Separator());
+		toolBar1.getItems().addAll(new Separator(), btnProcessGAS, btnProcessGS, btnStart, btnEnd, btnArrow,
+				new Separator());
 
 		setTop(toolBar1);
 
@@ -223,14 +223,14 @@ public class RootContainer extends BorderPane {
 			coordinatesMouse.setStartTranslateX(mouseEvent.getSceneX());
 			coordinatesMouse.setStartTranslateY(mouseEvent.getSceneY());
 
-			ProcessoBuilder processoBuilder = new ProcessoBuilder();
-			Processo process = processoBuilder.comTranslateX(coordinatesMouse.getStartTranslateX())
-					.comTranslateY(coordinatesMouse.getStartTranslateY()).builder();
+			Processo process = new Processo();
 
 			Text texto = new Text("GAS");
 
-			startDiagramContainer =
-					new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY(), texto);
+			startDiagramContainer = new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+
+			startDiagramContainer.getChildren().add(texto);
+			StackPane.setAlignment(texto, Pos.CENTER);
 
 			getChildren().add(startDiagramContainer);
 
@@ -259,15 +259,12 @@ public class RootContainer extends BorderPane {
 			coordinatesMouse.setStartTranslateX(mouseEvent.getSceneX());
 			coordinatesMouse.setStartTranslateY(mouseEvent.getSceneY());
 
-			ProcessoBuilder processoBuilder = new ProcessoBuilder();
-			Processo process = processoBuilder.comTranslateX(coordinatesMouse.getStartTranslateX())
-					.comTranslateY(coordinatesMouse.getStartTranslateY()).builder();
+			Processo process = new Processo();
 
 			Text texto = new Text("GS");
 
-			startDiagramContainer =
-					new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY(), texto);
-
+			startDiagramContainer = new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+			startDiagramContainer.getChildren().add(texto);
 			getChildren().add(startDiagramContainer);
 
 		});
@@ -297,13 +294,12 @@ public class RootContainer extends BorderPane {
 
 				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
-				Start start =
-						new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
+				Start start = new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
 
 				Text texto = new Text("I");
 				texto.setTextAlignment(TextAlignment.CENTER);
-				startDiagramContainer =
-						new DiagramContainer(start, mouseEvent.getSceneX(), mouseEvent.getSceneY(), texto);
+				startDiagramContainer = new DiagramContainer(start, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+				startDiagramContainer.getChildren().add(texto);
 				getChildren().add(startDiagramContainer);
 			} else {
 				startDiagramContainer = null;
@@ -311,8 +307,10 @@ public class RootContainer extends BorderPane {
 		});
 
 		btnStart.setOnMouseDragged(mouseEvent -> {
-			// double endSceneX = mouseEvent.getSceneX() - coordinatesMouse.getStartSceneX();
-			// double endSceneY = mouseEvent.getSceneY() - coordinatesMouse.getStartSceneY();
+			// double endSceneX = mouseEvent.getSceneX() -
+			// coordinatesMouse.getStartSceneX();
+			// double endSceneY = mouseEvent.getSceneY() -
+			// coordinatesMouse.getStartSceneY();
 			// double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
 			// double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
 			if (startDiagramContainer != null) {
@@ -341,8 +339,8 @@ public class RootContainer extends BorderPane {
 				Text texto = new Text("F");
 				texto.setTextAlignment(TextAlignment.CENTER);
 
-				startDiagramContainer =
-						new DiagramContainer(end, mouseEvent.getSceneX(), mouseEvent.getSceneY(), texto);
+				startDiagramContainer = new DiagramContainer(end, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+				startDiagramContainer.getChildren().add(texto);
 				getChildren().add(startDiagramContainer);
 			} else {
 				startDiagramContainer = null;
@@ -351,8 +349,10 @@ public class RootContainer extends BorderPane {
 		});
 
 		btnEnd.setOnMouseDragged(mouseEvent -> {
-			// double endSceneX = mouseEvent.getSceneX() - coordinatesMouse.getStartSceneX();
-			// double endSceneY = mouseEvent.getSceneY() - coordinatesMouse.getStartSceneY();
+			// double endSceneX = mouseEvent.getSceneX() -
+			// coordinatesMouse.getStartSceneX();
+			// double endSceneY = mouseEvent.getSceneY() -
+			// coordinatesMouse.getStartSceneY();
 			// double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
 			// double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
 			if (startDiagramContainer != null) {
@@ -483,9 +483,8 @@ public class RootContainer extends BorderPane {
 			if (node instanceof Connection) {
 				Bounds bounds = node.getBoundsInParent();
 				// verifica coordenadas do mouse
-				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
-						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
-						&& mouseEvent.getY() >= bounds.getMinY()) {
+				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX() && mouseEvent.getY() <= bounds.getMaxY()
+						&& mouseEvent.getX() >= bounds.getMinX() && mouseEvent.getY() >= bounds.getMinY()) {
 
 					connectionResult = (Connection) node;
 					break;
@@ -505,9 +504,8 @@ public class RootContainer extends BorderPane {
 			if (node instanceof DiagramContainer) {
 				Bounds bounds = node.getBoundsInParent();
 				// verifica coordenadas do mouse
-				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
-						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
-						&& mouseEvent.getY() >= bounds.getMinY()) {
+				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX() && mouseEvent.getY() <= bounds.getMaxY()
+						&& mouseEvent.getX() >= bounds.getMinX() && mouseEvent.getY() >= bounds.getMinY()) {
 
 					diagramResult = (DiagramContainer) node;
 					break;

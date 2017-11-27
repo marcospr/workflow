@@ -2,12 +2,10 @@ package diagram;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
-import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import model.ConstantsSystem;
 import model.CoordinatesMouseXY;
 import model.CoordinatesXY;
@@ -17,7 +15,7 @@ public class DiagramContainer extends StackPane implements Diagram {
 	private Boolean select;
 	private DiagramContainer next;
 
-	public DiagramContainer(final Node node, final double x, final double y, final Text text) {
+	public DiagramContainer(final Node node, final double x, final double y) {
 		super(node);
 		select = Boolean.FALSE;
 		coordinatesMouse = new CoordinatesMouseXY();
@@ -28,8 +26,6 @@ public class DiagramContainer extends StackPane implements Diagram {
 		setOnMousePressed(diagramOnMousePressedEventHandler);
 		setOnMouseDragged(diagramOnMouseDraggedEventHandler);
 		setOnMouseReleased(diagramOnMouseReleaseEventHandler);
-
-		setAlignment(node, Pos.BASELINE_CENTER);
 
 	}
 
