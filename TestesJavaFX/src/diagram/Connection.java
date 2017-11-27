@@ -11,11 +11,11 @@ import model.CoordinatesXYInitialFinal;
 
 public class Connection extends Line implements Diagram {
 	private Boolean select;
-	private Diagram startDiagram;
-	private Diagram endDiagram;
+	private DiagramContainer startDiagram;
+	private DiagramContainer endDiagram;
 	private Arrow arrow;
 
-	public Connection(final Diagram startDiagram, final Diagram endDiagram) {
+	public Connection(final DiagramContainer startDiagram, final DiagramContainer endDiagram) {
 		select = Boolean.FALSE;
 		this.startDiagram = startDiagram;
 		this.endDiagram = endDiagram;
@@ -31,7 +31,8 @@ public class Connection extends Line implements Diagram {
 			((Node) endDiagram).setEffect(null);
 		}
 
-		CoordinatesXYInitialFinal coordinates = CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
+		CoordinatesXYInitialFinal coordinates =
+				CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
 		if (startDiagram.isSelect()) {
@@ -65,7 +66,8 @@ public class Connection extends Line implements Diagram {
 			((Node) endDiagram).setEffect(null);
 		}
 
-		CoordinatesXYInitialFinal coordinates = CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
+		CoordinatesXYInitialFinal coordinates =
+				CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
 		if (startDiagram.isSelect()) {
@@ -99,19 +101,19 @@ public class Connection extends Line implements Diagram {
 		this.arrow = arrow;
 	}
 
-	public Diagram getStartDiagram() {
+	public DiagramContainer getStartDiagramContainer() {
 		return startDiagram;
 	}
 
-	public void setStartDiagram(final Diagram startDiagram) {
+	public void setStartDiagramContainer(final DiagramContainer startDiagram) {
 		this.startDiagram = startDiagram;
 	}
 
-	public Diagram getEndDiagram() {
+	public DiagramContainer getEndDiagramContainer() {
 		return endDiagram;
 	}
 
-	public void setEndNode(final Diagram endDiagram) {
+	public void setEndDiagramContainer(final DiagramContainer endDiagram) {
 		this.endDiagram = endDiagram;
 	}
 
@@ -141,13 +143,13 @@ public class Connection extends Line implements Diagram {
 	}
 
 	@Override
-	public Diagram getNext() {
+	public DiagramContainer getNext() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setNext(Diagram diagram) {
+	public void setNext(final DiagramContainer diagram) {
 		// TODO Auto-generated method stub
 
 	}
