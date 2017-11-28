@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Set;
 
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -45,7 +45,10 @@ public class RootContainer extends BorderPane {
 	private DiagramContainer endDiagramContainer;
 	// private Start start;
 	private Set<Selectable> selectDiagram = new HashSet<>();
-	private Button buttonForm = new Button("...");
+	private EventHandler<? super MouseEvent> handleButtonToolbarOnMousePressed;
+	private EventHandler<? super MouseEvent> handleButtonToolbarOnMouseDragged;
+	private EventHandler<? super MouseEvent> handleButtonToolbarOnMouseReleased;
+	private EventHandler<? super MouseEvent> handleProcessOnMouseClicked;
 
 	public RootContainer() {
 		buildToolbar();
@@ -54,38 +57,28 @@ public class RootContainer extends BorderPane {
 	}
 
 	private void buildToolbar() {
+		createToolbarHandlers();
 		Image imageProcess = new Image(getClass().getResourceAsStream("rounded.png"));
 		Image imageStart = new Image(getClass().getResourceAsStream("start.png"));
 		Image imageEnd = new Image(getClass().getResourceAsStream("end.png"));
 		Image imageArrow = new Image(getClass().getResourceAsStream("arrow.png"));
+		Image imageCheck = new Image(getClass().getResourceAsStream("check.png"));
 
-		Rectangle rectangleGAS = new Rectangle(60, 40, Color.WHITE);
-		rectangleGAS.setStroke(Color.BLACK);
-		rectangleGAS.setStrokeWidth(1.0);
-		rectangleGAS.setArcWidth(20);
-		rectangleGAS.setArcHeight(20);
-		StackPane.setMargin(rectangleGAS, new Insets(3));
+		ToolBar toolBar1 = new ToolBar();
+		toolBar1.getItems().add(new Separator());
+		String[] names = {"HLDG", "GAS", "DS", "GU", "AQNS"};
+		for (String name : names) {
+			StackPane diagram = createDiagramContainer(name);
+			Button btn = new Button(null, diagram);
+			btn.setContentDisplay(ContentDisplay.BOTTOM);
+			btn.setOnMousePressed(handleButtonToolbarOnMousePressed);
+			btn.setOnMouseDragged(handleButtonToolbarOnMouseDragged);
+			btn.setOnMouseReleased(handleButtonToolbarOnMouseReleased);
+			toolBar1.getItems().add(btn);
 
-		StackPane gas = new StackPane();
-		Text gasText = new Text("GAS");
-		gas.getChildren().addAll(rectangleGAS, gasText);
-		//
-		Rectangle rectangleGS = new Rectangle(60, 40, Color.WHITE);
-		rectangleGS.setStroke(Color.BLACK);
-		rectangleGS.setStrokeWidth(1.0);
-		rectangleGS.setArcWidth(20);
-		rectangleGS.setArcHeight(20);
-		StackPane.setMargin(rectangleGS, new Insets(3));
+		}
 
-		StackPane gs = new StackPane();
-		Text gsText = new Text("GS");
-		gs.getChildren().addAll(rectangleGS, gsText);
-
-		Button btnProcessGAS = new Button("Execution", gas);
-		btnProcessGAS.setContentDisplay(ContentDisplay.BOTTOM);
-
-		Button btnProcessGS = new Button("Execution", gs);
-		btnProcessGS.setContentDisplay(ContentDisplay.BOTTOM);
+		toolBar1.getItems().add(new Separator());
 
 		Button btnStart = new Button("Start", new ImageView(imageStart));
 		btnStart.setContentDisplay(ContentDisplay.BOTTOM);
@@ -96,9 +89,8 @@ public class RootContainer extends BorderPane {
 		Button btnArrow = new Button("SHIT + mouse drag/drop", new ImageView(imageArrow));
 		btnArrow.setContentDisplay(ContentDisplay.BOTTOM);
 
-		ToolBar toolBar1 = new ToolBar();
-		toolBar1.getItems().addAll(new Separator(), btnProcessGAS, btnProcessGS, btnStart, btnEnd, btnArrow,
-				new Separator());
+		toolBar1.getItems().addAll(new Separator(), btnStart, btnEnd, new Separator(),
+				new Button("Execute", new ImageView(imageCheck)));
 
 		setTop(toolBar1);
 
@@ -120,7 +112,13 @@ public class RootContainer extends BorderPane {
 
 		setOnMouseDragged(mouseEvent -> {
 			DiagramContainer lastProcessHandled = getDiagramFromCoordinatesXY(mouseEvent);
-			changeConnection(lastProcessHandled);
+			if (lastProcessHandled != null) {
+				changeConnection(lastProcessHandled);
+			} else {
+				// Trata-se de nova conexão
+				createLineTemporary(mouseEvent);
+
+			}
 		});
 
 		setOnMouseReleased(mouseEvent -> {
@@ -137,6 +135,7 @@ public class RootContainer extends BorderPane {
 						}
 					}
 				}
+				removeLineTemporary();
 			} else {
 				endDiagramContainer = lastDiagramHandle;
 				if (startDiagramContainer != null && endDiagramContainer != null) {
@@ -159,35 +158,6 @@ public class RootContainer extends BorderPane {
 				diagram = getConnectionsFromCoordinatesXY(mouseEvent);
 			}
 			selectDiagram(diagram);
-
-			// other rule
-			if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-				if (mouseEvent.getClickCount() == 2) {
-					try {
-						// Carrega a person overview.
-						FXMLLoader loader = new FXMLLoader();
-						loader.setLocation(MainApplication.class.getResource("../view/ui/form.fxml"));
-
-						// Dá ao controlador acesso à the main app.
-						FormController controller = loader.getController();
-						AnchorPane anchorPane;
-						anchorPane = (AnchorPane) loader.load();
-
-						// Cria o palco dialogStage.
-						Stage dialogStage = new Stage();
-						dialogStage.setTitle("Register Input Parameters");
-						dialogStage.initModality(Modality.WINDOW_MODAL);
-						dialogStage.initOwner(getScene().getWindow());
-						Scene scene = new Scene(anchorPane);
-						dialogStage.setScene(scene);
-
-						// Mostra a janela e espera até o usuário fechar.
-						dialogStage.showAndWait();
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			}
 		});
 
 		// Keys Pane
@@ -214,76 +184,6 @@ public class RootContainer extends BorderPane {
 			}
 		});
 
-		// Handlers Button Process
-
-		btnProcessGAS.setOnMousePressed(mouseEvent -> {
-			setCursor(Cursor.HAND);
-			coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
-			coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
-			coordinatesMouse.setStartTranslateX(mouseEvent.getSceneX());
-			coordinatesMouse.setStartTranslateY(mouseEvent.getSceneY());
-
-			Processo process = new Processo();
-
-			Text texto = new Text("GAS");
-
-			startDiagramContainer = new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY());
-
-			startDiagramContainer.getChildren().add(texto);
-			StackPane.setAlignment(texto, Pos.CENTER);
-
-			getChildren().add(startDiagramContainer);
-
-		});
-
-		btnProcessGAS.setOnMouseDragged(mouseEvent -> {
-			double endSceneX = mouseEvent.getSceneX() - coordinatesMouse.getStartSceneX();
-			double endSceneY = mouseEvent.getSceneY() - coordinatesMouse.getStartSceneY();
-			double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
-			double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
-
-			((Node) startDiagramContainer).setTranslateX(endTranslateX);
-			((Node) startDiagramContainer).setTranslateY(endTranslateY);
-		});
-
-		btnProcessGAS.setOnMouseReleased(mouseEvent -> {
-			correctBorders(mouseEvent, startDiagramContainer);
-			setCursor(Cursor.DEFAULT);
-		});
-
-		// button GS
-		btnProcessGS.setOnMousePressed(mouseEvent -> {
-			setCursor(Cursor.HAND);
-			coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
-			coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
-			coordinatesMouse.setStartTranslateX(mouseEvent.getSceneX());
-			coordinatesMouse.setStartTranslateY(mouseEvent.getSceneY());
-
-			Processo process = new Processo();
-
-			Text texto = new Text("GS");
-
-			startDiagramContainer = new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY());
-			startDiagramContainer.getChildren().add(texto);
-			getChildren().add(startDiagramContainer);
-
-		});
-
-		btnProcessGS.setOnMouseDragged(mouseEvent -> {
-			double endSceneX = mouseEvent.getSceneX() - coordinatesMouse.getStartSceneX();
-			double endSceneY = mouseEvent.getSceneY() - coordinatesMouse.getStartSceneY();
-			double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
-			double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
-
-			((Node) startDiagramContainer).setTranslateX(endTranslateX);
-			((Node) startDiagramContainer).setTranslateY(endTranslateY);
-		});
-
-		btnProcessGS.setOnMouseReleased(mouseEvent -> {
-			correctBorders(mouseEvent, startDiagramContainer);
-			setCursor(Cursor.DEFAULT);
-		});
-
 		// Handlers Button Start
 
 		btnStart.setOnMousePressed(mouseEvent -> {
@@ -294,11 +194,19 @@ public class RootContainer extends BorderPane {
 
 				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
-				Start start = new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
+				Start start =
+						new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
 
-				Text texto = new Text("I");
+				Text texto = new Text("Start");
+				texto.fillProperty().set(Color.INDIANRED);
 				texto.setTextAlignment(TextAlignment.CENTER);
-				startDiagramContainer = new DiagramContainer(start, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+				texto.setStyle("-fx-font-weight: bold;");
+
+				startDiagramContainer =
+						new DiagramContainer(start, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+
+				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
+
 				startDiagramContainer.getChildren().add(texto);
 				getChildren().add(startDiagramContainer);
 			} else {
@@ -307,12 +215,6 @@ public class RootContainer extends BorderPane {
 		});
 
 		btnStart.setOnMouseDragged(mouseEvent -> {
-			// double endSceneX = mouseEvent.getSceneX() -
-			// coordinatesMouse.getStartSceneX();
-			// double endSceneY = mouseEvent.getSceneY() -
-			// coordinatesMouse.getStartSceneY();
-			// double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
-			// double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
 			if (startDiagramContainer != null) {
 				((Node) startDiagramContainer).setTranslateX(mouseEvent.getSceneX());
 				((Node) startDiagramContainer).setTranslateY(mouseEvent.getSceneY());
@@ -336,10 +238,15 @@ public class RootContainer extends BorderPane {
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
 
 				End end = new End(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
-				Text texto = new Text("F");
+				Text texto = new Text("End");
+				texto.fillProperty().set(Color.INDIANRED);
 				texto.setTextAlignment(TextAlignment.CENTER);
+				texto.setStyle("-fx-font-weight: bold;");
 
-				startDiagramContainer = new DiagramContainer(end, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+				startDiagramContainer =
+						new DiagramContainer(end, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+
+				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
 				startDiagramContainer.getChildren().add(texto);
 				getChildren().add(startDiagramContainer);
 			} else {
@@ -366,6 +273,139 @@ public class RootContainer extends BorderPane {
 			setCursor(Cursor.DEFAULT);
 		});
 
+	}
+
+	private void createLineTemporary(final MouseEvent mouseEvent) {
+		removeLineTemporary();
+		LineTemporary line = null;
+		if (startDiagramContainer != null) {
+			line = new LineTemporary(startDiagramContainer.getTranslateX(),
+					startDiagramContainer.getTranslateY(), mouseEvent.getSceneX(), mouseEvent.getSceneY());
+			getChildren().add(0, line);
+		}
+	}
+
+	private void removeLineTemporary() {
+		// Node nodeToRemove = null;
+		ObservableList<Node> nodes = getChildren();
+		// for (Node node : nodes) {
+		// if (node instanceof LineTemporary) {
+		// nodeToRemove = node;
+		// break;
+		// }
+		// }
+		// if (nodeToRemove != null) {
+		// nodes.remove(nodeToRemove);
+		// }
+		if (nodes.get(0) instanceof LineTemporary) {
+			nodes.remove(0);
+		}
+	}
+
+	private void openForm() {
+		try {
+			// Carrega
+			FXMLLoader loader = new FXMLLoader();
+			loader.setLocation(MainApplication.class.getResource("../view/ui/form.fxml"));
+
+			// Dá ao controlador acesso à the main app.
+			FormController controller = loader.getController();
+			AnchorPane anchorPane;
+			anchorPane = (AnchorPane) loader.load();
+
+			// Cria o palco dialogStage.
+			Stage dialogStage = new Stage();
+			dialogStage.setTitle("Register Input Parameters");
+			dialogStage.initModality(Modality.WINDOW_MODAL);
+			dialogStage.initOwner(getScene().getWindow());
+			Scene scene = new Scene(anchorPane);
+			dialogStage.setScene(scene);
+
+			// Mostra a janela e espera até o usuário fechar.
+			dialogStage.showAndWait();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void createToolbarHandlers() {
+		// Handlers Button Process
+
+		handleProcessOnMouseClicked = mouseEvent -> {
+			if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+				if (mouseEvent.getClickCount() == 2) {
+					openForm();
+				}
+			}
+		};
+
+		handleButtonToolbarOnMousePressed = mouseEvent -> {
+			setCursor(Cursor.HAND);
+
+			coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
+			coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
+			coordinatesMouse.setStartTranslateX(mouseEvent.getSceneX());
+			coordinatesMouse.setStartTranslateY(mouseEvent.getSceneY());
+
+			Processo process = new Processo();
+
+			process.setOnMouseClicked(handleProcessOnMouseClicked);
+
+			String textoButton =
+					((Text) ((StackPane) ((Button) mouseEvent.getSource()).getGraphic()).getChildren().get(1))
+							.getText();
+
+			Text texto = new Text(textoButton);
+			texto.fillProperty().set(Color.INDIANRED);
+			texto.setStyle("-fx-font-weight: bold;");
+
+			startDiagramContainer =
+					new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+
+			Image imageGear = new Image(getClass().getResourceAsStream("gear.png"));
+			ImageView imageViewGear = new ImageView(imageGear);
+
+			texto.setTranslateX(startDiagramContainer.getLayoutX() + 20);
+			// StackPane.setAlignment(texto, Pos.CENTER_RIGHT);
+			imageViewGear.setTranslateX(startDiagramContainer.getLayoutX() - 20);
+			// StackPane.setAlignment(imageViewGear, Pos.CENTER_LEFT);
+
+			startDiagramContainer.getChildren().addAll(texto, imageViewGear);
+
+			getChildren().add(startDiagramContainer);
+		};
+
+		handleButtonToolbarOnMouseDragged = mouseEvent -> {
+			double endSceneX = mouseEvent.getSceneX() - coordinatesMouse.getStartSceneX();
+			double endSceneY = mouseEvent.getSceneY() - coordinatesMouse.getStartSceneY();
+			double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
+			double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
+
+			((Node) startDiagramContainer).setTranslateX(endTranslateX);
+			((Node) startDiagramContainer).setTranslateY(endTranslateY);
+		};
+
+		handleButtonToolbarOnMouseReleased = mouseEvent -> {
+			correctBorders(mouseEvent, startDiagramContainer);
+			setCursor(Cursor.DEFAULT);
+		};
+	}
+
+	private StackPane createDiagramContainer(final String text) {
+		Rectangle rectangle = new Rectangle(60, 40, Color.WHITE);
+		rectangle.setStroke(Color.GREY);
+		rectangle.setStrokeWidth(1.0);
+		rectangle.setArcWidth(20);
+		rectangle.setArcHeight(20);
+		StackPane.setMargin(rectangle, new Insets(3));
+
+		StackPane gas = new StackPane();
+		Text gasText = new Text(text);
+		gasText.setStyle("-fx-font-weight: bold;");
+		gasText.fillProperty().set(Color.INDIANRED);
+		gas.getChildren().addAll(rectangle, gasText);
+
+		return gas;
 	}
 
 	private void removeConnection(Connection connection) {
@@ -400,7 +440,7 @@ public class RootContainer extends BorderPane {
 			final DiagramContainer endDiagramContainer) {
 		Connection conn = new Connection(startDiagramContainer, endDiagramContainer);
 
-		getChildren().add(0, conn);
+		getChildren().add(conn);
 		getChildren().add(conn.getArrow());
 	}
 
@@ -483,8 +523,9 @@ public class RootContainer extends BorderPane {
 			if (node instanceof Connection) {
 				Bounds bounds = node.getBoundsInParent();
 				// verifica coordenadas do mouse
-				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX() && mouseEvent.getY() <= bounds.getMaxY()
-						&& mouseEvent.getX() >= bounds.getMinX() && mouseEvent.getY() >= bounds.getMinY()) {
+				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
+						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
+						&& mouseEvent.getY() >= bounds.getMinY()) {
 
 					connectionResult = (Connection) node;
 					break;
@@ -504,8 +545,9 @@ public class RootContainer extends BorderPane {
 			if (node instanceof DiagramContainer) {
 				Bounds bounds = node.getBoundsInParent();
 				// verifica coordenadas do mouse
-				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX() && mouseEvent.getY() <= bounds.getMaxY()
-						&& mouseEvent.getX() >= bounds.getMinX() && mouseEvent.getY() >= bounds.getMinY()) {
+				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
+						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
+						&& mouseEvent.getY() >= bounds.getMinY()) {
 
 					diagramResult = (DiagramContainer) node;
 					break;

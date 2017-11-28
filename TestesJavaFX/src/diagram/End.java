@@ -10,10 +10,11 @@ public class End extends Circle {
 		setCenterX(x);
 		setCenterY(y);
 		setRadius(radius);
-		setFill(Color.LIGHTGRAY);
 		// borda
-		setStroke(Color.BLACK);
 		setStrokeWidth(5.0);
+
+		setStroke(Color.GREY);
+		setFill(Color.ANTIQUEWHITE);
 
 	}
 

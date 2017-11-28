@@ -1,29 +1,29 @@
 package model;
 
 public class Parameter {
-	private String key;
+	private String name;
 	private String value;
 
-	public Parameter(String key, String value) {
+	public Parameter(final String name, final String value) {
 		super();
-		this.key = key;
+		setName(name);
 		this.value = value;
-	}
-
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
 	}
 
 	public String getValue() {
 		return value;
 	}
 
-	public void setValue(String value) {
+	public void setValue(final String value) {
 		this.value = value;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(final String name) {
+		this.name = name;
 	}
 
 }

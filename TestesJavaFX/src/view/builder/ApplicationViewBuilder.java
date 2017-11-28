@@ -23,6 +23,8 @@ public class ApplicationViewBuilder {
 
 		stage.setScene(scene);
 
+		stage.setTitle("MERO - Workflow Técnico");
+
 		ApplicationView view = new ApplicationView(stage, scene, rootContainer);
 
 		return view;

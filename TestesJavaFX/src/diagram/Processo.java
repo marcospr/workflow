@@ -14,12 +14,13 @@ public class Processo extends Rectangle {
 		// preenchimento
 		setFill(Color.WHITE);
 		// borda
-		setStroke(Color.BLACK);
 		setStrokeWidth(2.0);
 
 		setArcWidth(20);
 		setArcHeight(20);
 
+		setStroke(Color.GREY);
+		setFill(Color.ANTIQUEWHITE);
 	}
 
 }

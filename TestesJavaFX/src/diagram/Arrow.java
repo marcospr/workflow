@@ -1,5 +1,6 @@
 package diagram;
 
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import model.CoordinatesXYInitialFinal;
 
@@ -7,6 +8,7 @@ public class Arrow extends Polygon implements Selectable {
 	private Boolean select;
 
 	public Arrow(final Connection connection) {
+		setStroke(Color.GREY);
 		select = Boolean.FALSE;
 		CoordinatesXYInitialFinal coordinates = new CoordinatesXYInitialFinal();
 		double startX = 0;

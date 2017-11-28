@@ -10,9 +10,9 @@ public class Start extends Circle {
 		setCenterX(x);
 		setCenterY(y);
 		setRadius(radius);
-		setFill(Color.WHITE);
 		// borda
-		setStroke(Color.BLACK);
+		setStroke(Color.GREY);
+		setFill(Color.ANTIQUEWHITE);
 		setStrokeWidth(2.0);
 	}
 

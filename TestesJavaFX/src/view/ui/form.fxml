@@ -18,25 +18,22 @@
                         <Font size="24.0" />
                      </font>
                   </Label>
-                  <TableView fx:id="tableViewParameters" layoutX="9.0" layoutY="55.0" prefHeight="237.0" prefWidth="481.0">
+                  <Label layoutX="10.0" layoutY="59.0" text="Add Parameter:" />
+                  <TextField fx:id="tfParameter" layoutX="101.0" layoutY="55.0" prefHeight="25.0" prefWidth="165.0" />
+                  <TextField fx:id="tfValueParamater" layoutX="319.0" layoutY="55.0" prefHeight="25.0" prefWidth="123.0" />
+                  <TableView fx:id="tableViewParameters" layoutX="9.0" layoutY="85.0" prefHeight="207.0" prefWidth="481.0">
                     <columns>
-                      <TableColumn prefWidth="199.0" text="Name" />
-                      <TableColumn minWidth="0.0" prefWidth="225.0" text="Value" />
+                      <TableColumn fx:id="nameTableColumn" prefWidth="199.0" text="Name" />
+                      <TableColumn fx:id="valueTableColumn" minWidth="0.0" prefWidth="225.0" text="Value" />
                     </columns>
                   </TableView>
+                  <Label layoutX="279.0" layoutY="59.0" text="Value:" />
+                  <Button fx:id="buttonAddParameter" layoutX="452.0" layoutY="55.0" mnemonicParsing="false" text="Add" />
                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
                   <BorderPane layoutX="156.0" layoutY="48.0" prefHeight="296.0" prefWidth="498.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <top>
-                        <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-                          <items>
-                            <Button mnemonicParsing="false" text="Add" />
-                              <Button mnemonicParsing="false" text="Remove" />
-                          </items>
-                        </ToolBar>
-                     </top>
                      <bottom>
                         <HBox alignment="TOP_RIGHT" prefHeight="30.0" spacing="15.0" BorderPane.alignment="BOTTOM_RIGHT">
                            <children>
@@ -49,12 +46,20 @@
                         </HBox>
                      </bottom>
                      <center>
-                        <TableView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                        <TableView fx:id="tableViewFiles" prefHeight="226.0" prefWidth="395.0" BorderPane.alignment="CENTER">
                           <columns>
-                            <TableColumn prefWidth="496.0" text="File Name" />
+                            <TableColumn fx:id="tableColumnFileName" prefWidth="496.0" text="File Name" />
                           </columns>
                         </TableView>
                      </center>
+                     <left>
+                        <ToolBar orientation="VERTICAL" prefHeight="266.0" prefWidth="59.0" BorderPane.alignment="CENTER">
+                          <items>
+                            <Button fx:id="buttonChooseFile" mnemonicParsing="false" onAction="#handleChooseFileAction" prefHeight="25.0" prefWidth="58.0" text="Choose" />
+                              <Button fx:id="buttonRemoveFile" mnemonicParsing="false" text="Remove" />
+                          </items>
+                        </ToolBar>
+                     </left>
                   </BorderPane>
                </children>
             </AnchorPane>

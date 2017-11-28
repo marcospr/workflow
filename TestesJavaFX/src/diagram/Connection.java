@@ -20,7 +20,7 @@ public class Connection extends Line implements Diagram {
 		this.startDiagram = startDiagram;
 		this.endDiagram = endDiagram;
 		this.startDiagram.setNext(this.endDiagram);
-		setStroke(Color.BLACK);
+		setStroke(Color.GREY);
 		setStrokeWidth(1);
 
 		// Tira o contorno de efeito
