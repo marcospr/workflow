@@ -6,19 +6,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import command.Command;
+import command.CommandAQNS;
+import command.CommandDS;
+import command.CommandGAS;
+import command.CommandGU;
+import command.CommandHLDG;
+import factory.CommandFactory;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToolBar;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -26,7 +38,9 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -34,6 +48,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import main.MainApplication;
+import model.CommandType;
 import model.ConstantsSystem;
 import model.CoordinatesMouseXY;
 import view.ui.FormController;
@@ -41,8 +56,11 @@ import view.ui.FormController;
 public class RootContainer extends BorderPane {
 	private CoordinatesMouseXY coordinatesMouse;
 	// private Processo processoHelper;
-	private DiagramContainer startDiagramContainer;
-	private DiagramContainer endDiagramContainer;
+	private AbstractDiagram startDiagramContainer;
+	private AbstractDiagram endDiagramContainer;
+	private ProgressBar barra;
+	private Label status;
+	private CommandFactory commandFactory;
 	// private Start start;
 	private Set<Selectable> selectDiagram = new HashSet<>();
 	private EventHandler<? super MouseEvent> handleButtonToolbarOnMousePressed;
@@ -51,12 +69,41 @@ public class RootContainer extends BorderPane {
 	private EventHandler<? super MouseEvent> handleProcessOnMouseClicked;
 
 	public RootContainer() {
-		buildToolbar();
+		VBox topContainer = new VBox();
+		buildMenu(topContainer);
+		buildToolbar(topContainer);
+		setTop(topContainer);
 		coordinatesMouse = new CoordinatesMouseXY();
+		commandFactory = new CommandFactory();
+	}
+
+	private void buildMenu(final VBox topContainer) {
+		MenuBar mainMenu = new MenuBar();
+
+		topContainer.getChildren().add(mainMenu);
+
+		Menu file = new Menu("File");
+		Menu edit = new Menu("Edit");
+		Menu help = new Menu("Help");
+
+		// Create and add the "File" sub-menu options.
+		MenuItem openFile = new MenuItem("Open File");
+		MenuItem exitApp = new MenuItem("Exit");
+		file.getItems().addAll(openFile, exitApp);
+
+		// Create and add the "Edit" sub-menu options.
+		MenuItem preferences = new MenuItem("Preferences");
+		edit.getItems().add(preferences);
+
+		// Create and add the "Help" sub-menu options.
+		MenuItem about = new MenuItem("About");
+		help.getItems().add(about);
+
+		mainMenu.getMenus().addAll(file, edit, help);
 
 	}
 
-	private void buildToolbar() {
+	private void buildToolbar(final VBox topContainer) {
 		createToolbarHandlers();
 		Image imageProcess = new Image(getClass().getResourceAsStream("rounded.png"));
 		Image imageStart = new Image(getClass().getResourceAsStream("start.png"));
@@ -66,19 +113,17 @@ public class RootContainer extends BorderPane {
 
 		ToolBar toolBar1 = new ToolBar();
 		toolBar1.getItems().add(new Separator());
-		String[] names = {"HLDG", "GAS", "DS", "GU", "AQNS"};
-		for (String name : names) {
-			StackPane diagram = createDiagramContainer(name);
-			Button btn = new Button(null, diagram);
+		Command[] commands =
+				{new CommandHLDG(), new CommandGAS(), new CommandDS(), new CommandGU(), new CommandAQNS()};
+		for (Command command : commands) {
+			StackPane buttonStackPane = createButtonStackPane(command);
+			Button btn = new Button(null, buttonStackPane);
 			btn.setContentDisplay(ContentDisplay.BOTTOM);
 			btn.setOnMousePressed(handleButtonToolbarOnMousePressed);
 			btn.setOnMouseDragged(handleButtonToolbarOnMouseDragged);
 			btn.setOnMouseReleased(handleButtonToolbarOnMouseReleased);
 			toolBar1.getItems().add(btn);
-
 		}
-
-		toolBar1.getItems().add(new Separator());
 
 		Button btnStart = new Button("Start", new ImageView(imageStart));
 		btnStart.setContentDisplay(ContentDisplay.BOTTOM);
@@ -89,45 +134,137 @@ public class RootContainer extends BorderPane {
 		Button btnArrow = new Button("SHIT + mouse drag/drop", new ImageView(imageArrow));
 		btnArrow.setContentDisplay(ContentDisplay.BOTTOM);
 
-		toolBar1.getItems().addAll(new Separator(), btnStart, btnEnd, new Separator(),
-				new Button("Execute", new ImageView(imageCheck)));
+		Button btnExecute = new Button("Run", new ImageView(imageCheck));
+		toolBar1.getItems().addAll(new Separator(), btnStart, btnEnd, new Separator(), btnExecute);
 
-		setTop(toolBar1);
+		topContainer.getChildren().add(toolBar1);
+
+		setBottom(createBarrasStatus());
+
+		// Handlers Button Execute
+		btnExecute.setOnMousePressed(mouseEvent -> {
+			AbstractDiagram start = getStartFromContainer();
+			if (start != null) {
+				unSelectElement();
+				start.execute(barra);
+			}
+		});
+
+		// Handlers Button Start
+		btnStart.setOnMousePressed(mouseEvent -> {
+			setCursor(Cursor.HAND);
+			if (!startOrEndExists(Start.class)) {
+				coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
+				coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
+
+				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
+				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
+				Start start =
+						new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
+
+				Text texto = new Text("Start");
+				texto.fillProperty().set(Color.INDIANRED);
+				texto.setTextAlignment(TextAlignment.CENTER);
+				texto.setStyle("-fx-font-weight: bold;");
+
+				startDiagramContainer = new StartDiagram(start, mouseEvent.getSceneX(),
+						mouseEvent.getSceneY(), commandFactory.createCommand(CommandType.Start));
+
+				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
+
+				startDiagramContainer.getChildren().add(texto);
+				getChildren().add(startDiagramContainer);
+			} else {
+				startDiagramContainer = null;
+			}
+		});
+
+		btnStart.setOnMouseDragged(mouseEvent -> {
+			if (startDiagramContainer != null) {
+				((Node) startDiagramContainer).setTranslateX(mouseEvent.getSceneX());
+				((Node) startDiagramContainer).setTranslateY(mouseEvent.getSceneY());
+			}
+		});
+
+		btnStart.setOnMouseReleased(mouseEvent -> {
+			correctBordersIfNecessary(mouseEvent, startDiagramContainer);
+			setCursor(Cursor.DEFAULT);
+		});
+
+		// Handlers Button End
+
+		btnEnd.setOnMousePressed(mouseEvent -> {
+			setCursor(Cursor.HAND);
+			if (!startOrEndExists(End.class)) {
+				coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
+				coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
+
+				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
+				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
+
+				End end = new End(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
+				Text texto = new Text("End");
+				texto.fillProperty().set(Color.INDIANRED);
+				texto.setTextAlignment(TextAlignment.CENTER);
+				texto.setStyle("-fx-font-weight: bold;");
+
+				startDiagramContainer = new EndDiagram(end, mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+						commandFactory.createCommand(CommandType.End));
+
+				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
+				startDiagramContainer.getChildren().add(texto);
+				getChildren().add(startDiagramContainer);
+			} else {
+				startDiagramContainer = null;
+			}
+
+		});
+
+		btnEnd.setOnMouseDragged(mouseEvent -> {
+			if (startDiagramContainer != null) {
+				((Node) startDiagramContainer).setTranslateX(mouseEvent.getSceneX());
+				((Node) startDiagramContainer).setTranslateY(mouseEvent.getSceneY());
+			}
+		});
+
+		btnEnd.setOnMouseReleased(mouseEvent -> {
+			correctBordersIfNecessary(mouseEvent, startDiagramContainer);
+			setCursor(Cursor.DEFAULT);
+		});
 
 		// handlers Pane
-
 		setOnMousePressed(mouseEvent -> {
 			setCursor(Cursor.HAND);
-			Diagram diagram = getDiagramFromCoordinatesXY(mouseEvent);
+			AbstractDiagram diagram = getDiagramFromCoordinatesXY(mouseEvent);
 			if (isContainer(diagram)) {
-				startDiagramContainer = (DiagramContainer) diagram;
+				startDiagramContainer = diagram;
 				endDiagramContainer = null;
 			}
 			if (!mouseEvent.isControlDown()) {
-				unselectDiagram();
-				selectDiagram(diagram);
+				unSelectElement();
+				selectElement(diagram);
 			}
 
 		});
 
 		setOnMouseDragged(mouseEvent -> {
-			DiagramContainer lastProcessHandled = getDiagramFromCoordinatesXY(mouseEvent);
+			AbstractDiagram lastProcessHandled = getDiagramFromCoordinatesXY(mouseEvent);
 			if (lastProcessHandled != null) {
 				changeConnection(lastProcessHandled);
 			} else {
 				// Trata-se de nova conexão
 				createLineTemporary(mouseEvent);
-
 			}
 		});
 
 		setOnMouseReleased(mouseEvent -> {
-			DiagramContainer lastDiagramHandle = getDiagramFromCoordinatesXY(mouseEvent);
+			AbstractDiagram lastDiagramHandle = getDiagramFromCoordinatesXY(mouseEvent);
 			if (mouseEvent.isShiftDown()) {
 				endDiagramContainer = lastDiagramHandle;
 				if (startDiagramContainer != null && endDiagramContainer != null
 						&& !startDiagramContainer.equals(endDiagramContainer)
-						&& !startDiagramContainer.equals(endDiagramContainer.getNext())) {
+						&& !startDiagramContainer.equals(endDiagramContainer.getNext())
+						&& !(startDiagramContainer instanceof EndDiagram)) {
 					if (startDiagramContainer.getNext() == null) {
 						// Cria Arrow
 						if (!connectionExists(startDiagramContainer, endDiagramContainer)) {
@@ -135,13 +272,13 @@ public class RootContainer extends BorderPane {
 						}
 					}
 				}
-				removeLineTemporary();
 			} else {
 				endDiagramContainer = lastDiagramHandle;
 				if (startDiagramContainer != null && endDiagramContainer != null) {
 					changeConnection(endDiagramContainer);
 				}
 			}
+			removeLineTemporary();
 
 			setCursor(Cursor.DEFAULT);
 		});
@@ -149,15 +286,14 @@ public class RootContainer extends BorderPane {
 		setOnMouseClicked(mouseEvent -> {
 			if (!mouseEvent.isControlDown()) {
 				// Limpo qualquer seleção anterior
-				unselectDiagram();
+				unSelectElement();
 			}
 
-			// Seleciono o Node atual das coordenadas XY
-			Diagram diagram = getDiagramFromCoordinatesXY(mouseEvent);
-			if (diagram == null) {
-				diagram = getConnectionsFromCoordinatesXY(mouseEvent);
+			// Seleciono o Elemento atual das coordenadas XY
+			Selectable element = getSelectableFromCoordinatesXY(mouseEvent);
+			if (element != null) {
+				selectElement(element);
 			}
-			selectDiagram(diagram);
 		});
 
 		// Keys Pane
@@ -184,95 +320,27 @@ public class RootContainer extends BorderPane {
 			}
 		});
 
-		// Handlers Button Start
+	}
 
-		btnStart.setOnMousePressed(mouseEvent -> {
-			setCursor(Cursor.HAND);
-			if (!startOrEndExists(Start.class)) {
-				coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
-				coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
+	private HBox createBarrasStatus() {
+		barra = new ProgressBar();
+		barra.setVisible(false);
+		status = new Label();
+		HBox box = new HBox();
+		box.setAlignment(Pos.CENTER);
+		box.getChildren().addAll(status, barra);
+		return null;
+	}
 
-				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
-				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
-				Start start =
-						new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
-
-				Text texto = new Text("Start");
-				texto.fillProperty().set(Color.INDIANRED);
-				texto.setTextAlignment(TextAlignment.CENTER);
-				texto.setStyle("-fx-font-weight: bold;");
-
-				startDiagramContainer =
-						new DiagramContainer(start, mouseEvent.getSceneX(), mouseEvent.getSceneY());
-
-				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
-
-				startDiagramContainer.getChildren().add(texto);
-				getChildren().add(startDiagramContainer);
-			} else {
-				startDiagramContainer = null;
+	private AbstractDiagram getStartFromContainer() {
+		ObservableList<Node> nodes = getChildren();
+		StartDiagram start = null;
+		for (Node node : nodes) {
+			if (node instanceof StartDiagram) {
+				start = (StartDiagram) node;
 			}
-		});
-
-		btnStart.setOnMouseDragged(mouseEvent -> {
-			if (startDiagramContainer != null) {
-				((Node) startDiagramContainer).setTranslateX(mouseEvent.getSceneX());
-				((Node) startDiagramContainer).setTranslateY(mouseEvent.getSceneY());
-			}
-		});
-
-		btnStart.setOnMouseReleased(mouseEvent -> {
-			correctBorders(mouseEvent, startDiagramContainer);
-			setCursor(Cursor.DEFAULT);
-		});
-
-		// Handlers Button End
-
-		btnEnd.setOnMousePressed(mouseEvent -> {
-			setCursor(Cursor.HAND);
-			if (!startOrEndExists(End.class)) {
-				coordinatesMouse.setStartSceneX(mouseEvent.getSceneX());
-				coordinatesMouse.setStartSceneY(mouseEvent.getSceneY());
-
-				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
-				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
-
-				End end = new End(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
-				Text texto = new Text("End");
-				texto.fillProperty().set(Color.INDIANRED);
-				texto.setTextAlignment(TextAlignment.CENTER);
-				texto.setStyle("-fx-font-weight: bold;");
-
-				startDiagramContainer =
-						new DiagramContainer(end, mouseEvent.getSceneX(), mouseEvent.getSceneY());
-
-				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
-				startDiagramContainer.getChildren().add(texto);
-				getChildren().add(startDiagramContainer);
-			} else {
-				startDiagramContainer = null;
-			}
-
-		});
-
-		btnEnd.setOnMouseDragged(mouseEvent -> {
-			// double endSceneX = mouseEvent.getSceneX() -
-			// coordinatesMouse.getStartSceneX();
-			// double endSceneY = mouseEvent.getSceneY() -
-			// coordinatesMouse.getStartSceneY();
-			// double endTranslateX = coordinatesMouse.getStartTranslateX() + endSceneX;
-			// double endTranslateY = coordinatesMouse.getStartTranslateY() + endSceneY;
-			if (startDiagramContainer != null) {
-				((Node) startDiagramContainer).setTranslateX(mouseEvent.getSceneX());
-				((Node) startDiagramContainer).setTranslateY(mouseEvent.getSceneY());
-			}
-		});
-
-		btnEnd.setOnMouseReleased(mouseEvent -> {
-			correctBorders(mouseEvent, startDiagramContainer);
-			setCursor(Cursor.DEFAULT);
-		});
-
+		}
+		return start;
 	}
 
 	private void createLineTemporary(final MouseEvent mouseEvent) {
@@ -349,28 +417,29 @@ public class RootContainer extends BorderPane {
 
 			Processo process = new Processo();
 
-			process.setOnMouseClicked(handleProcessOnMouseClicked);
+			// index 0-> Rectangle, 1-> Text
+			Text text =
+					(Text) ((StackPane) ((Button) mouseEvent.getSource()).getGraphic()).getChildren().get(1);
 
-			String textoButton =
-					((Text) ((StackPane) ((Button) mouseEvent.getSource()).getGraphic()).getChildren().get(1))
-							.getText();
-
-			Text texto = new Text(textoButton);
+			Text texto = new Text(text.getText());
 			texto.fillProperty().set(Color.INDIANRED);
 			texto.setStyle("-fx-font-weight: bold;");
 
-			startDiagramContainer =
-					new DiagramContainer(process, mouseEvent.getSceneX(), mouseEvent.getSceneY());
+			// commandFactory.createCommand(CommandType()));
+			CommandType commandType = Enum.valueOf(CommandType.class, text.getText());
+
+			startDiagramContainer = new ProcessDiagram(process, mouseEvent.getSceneX(),
+					mouseEvent.getSceneY(), commandFactory.createCommand(commandType));
 
 			Image imageGear = new Image(getClass().getResourceAsStream("gear.png"));
 			ImageView imageViewGear = new ImageView(imageGear);
 
 			texto.setTranslateX(startDiagramContainer.getLayoutX() + 20);
-			// StackPane.setAlignment(texto, Pos.CENTER_RIGHT);
 			imageViewGear.setTranslateX(startDiagramContainer.getLayoutX() - 20);
-			// StackPane.setAlignment(imageViewGear, Pos.CENTER_LEFT);
 
 			startDiagramContainer.getChildren().addAll(texto, imageViewGear);
+
+			startDiagramContainer.setOnMouseClicked(handleProcessOnMouseClicked);
 
 			getChildren().add(startDiagramContainer);
 		};
@@ -386,12 +455,12 @@ public class RootContainer extends BorderPane {
 		};
 
 		handleButtonToolbarOnMouseReleased = mouseEvent -> {
-			correctBorders(mouseEvent, startDiagramContainer);
+			correctBordersIfNecessary(mouseEvent, startDiagramContainer);
 			setCursor(Cursor.DEFAULT);
 		};
 	}
 
-	private StackPane createDiagramContainer(final String text) {
+	private StackPane createButtonStackPane(final Command command) {
 		Rectangle rectangle = new Rectangle(60, 40, Color.WHITE);
 		rectangle.setStroke(Color.GREY);
 		rectangle.setStrokeWidth(1.0);
@@ -399,13 +468,13 @@ public class RootContainer extends BorderPane {
 		rectangle.setArcHeight(20);
 		StackPane.setMargin(rectangle, new Insets(3));
 
-		StackPane gas = new StackPane();
-		Text gasText = new Text(text);
-		gasText.setStyle("-fx-font-weight: bold;");
-		gasText.fillProperty().set(Color.INDIANRED);
-		gas.getChildren().addAll(rectangle, gasText);
+		StackPane stackPane = new StackPane();
+		Text label = new Text(command.getName());
+		label.setStyle("-fx-font-weight: bold;");
+		label.fillProperty().set(Color.INDIANRED);
+		stackPane.getChildren().addAll(rectangle, label);
 
-		return gas;
+		return stackPane;
 	}
 
 	private void removeConnection(Connection connection) {
@@ -418,33 +487,29 @@ public class RootContainer extends BorderPane {
 		connection = null;
 	}
 
-	private void unselectDiagram() {
+	private void unSelectElement() {
 		for (Selectable selectable : selectDiagram) {
-			((Node) selectable).setEffect(null);
-			selectable.setSelect(Boolean.FALSE);
+			selectable.unSelect();
 		}
 		selectDiagram = new HashSet<>();
 	}
 
-	private void selectDiagram(final Diagram diagram) {
-		if (diagram != null) {
-			if (diagram instanceof Selectable) {
-				((Node) diagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
-				diagram.setSelect(Boolean.TRUE);
-				selectDiagram.add(diagram);
-			}
+	private void selectElement(final Selectable selectable) {
+		if (selectable != null) {
+			selectable.select();
+			selectDiagram.add(selectable);
 		}
 	}
 
-	private void createConnection(final DiagramContainer startDiagramContainer,
-			final DiagramContainer endDiagramContainer) {
+	private void createConnection(final AbstractDiagram startDiagramContainer,
+			final AbstractDiagram endDiagramContainer) {
 		Connection conn = new Connection(startDiagramContainer, endDiagramContainer);
 
 		getChildren().add(conn);
 		getChildren().add(conn.getArrow());
 	}
 
-	private void changeConnection(final DiagramContainer lastDiagramHandled) {
+	private void changeConnection(final AbstractDiagram lastDiagramHandled) {
 
 		if (lastDiagramHandled != null) {
 
@@ -470,8 +535,8 @@ public class RootContainer extends BorderPane {
 		boolean result = false;
 		ObservableList<Node> nodesContainerMain = getChildren();
 		for (Node node : nodesContainerMain) {
-			if (node instanceof DiagramContainer) {
-				DiagramContainer diagramContainer = (DiagramContainer) node;
+			if (node instanceof AbstractDiagram) {
+				AbstractDiagram diagramContainer = (AbstractDiagram) node;
 
 				ObservableList<Node> childrens = diagramContainer.getChildren();
 				for (Node children : childrens) {
@@ -489,8 +554,8 @@ public class RootContainer extends BorderPane {
 		return result;
 	}
 
-	private boolean connectionExists(final DiagramContainer startDiagramContainer,
-			final DiagramContainer endDiagramContainer) {
+	private boolean connectionExists(final AbstractDiagram startDiagramContainer,
+			final AbstractDiagram endDiagramContainer) {
 		boolean result = false;
 		List<Connection> connections = getConnectionsFromContainer();
 		for (Connection connection : connections) {
@@ -536,20 +601,40 @@ public class RootContainer extends BorderPane {
 
 	}
 
-	public DiagramContainer getDiagramFromCoordinatesXY(final MouseEvent mouseEvent) {
-		DiagramContainer diagramResult = null;
+	public Selectable getSelectableFromCoordinatesXY(final MouseEvent mouseEvent) {
+		Selectable result = null;
 		ObservableList<Node> nodes = getChildren();
-		// List<Node> nodesFound = new ArrayList<>();
 
 		for (Node node : nodes) {
-			if (node instanceof DiagramContainer) {
+			if (node instanceof Selectable) {
 				Bounds bounds = node.getBoundsInParent();
 				// verifica coordenadas do mouse
 				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
 						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
 						&& mouseEvent.getY() >= bounds.getMinY()) {
 
-					diagramResult = (DiagramContainer) node;
+					result = (Selectable) node;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	public AbstractDiagram getDiagramFromCoordinatesXY(final MouseEvent mouseEvent) {
+		AbstractDiagram diagramResult = null;
+		ObservableList<Node> nodes = getChildren();
+		// List<Node> nodesFound = new ArrayList<>();
+
+		for (Node node : nodes) {
+			if (node instanceof AbstractDiagram) {
+				Bounds bounds = node.getBoundsInParent();
+				// verifica coordenadas do mouse
+				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
+						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
+						&& mouseEvent.getY() >= bounds.getMinY()) {
+
+					diagramResult = (AbstractDiagram) node;
 					break;
 				}
 			}
@@ -562,11 +647,12 @@ public class RootContainer extends BorderPane {
 		return bounds;
 	}
 
-	private Boolean isContainer(final Diagram diagram) {
-		return diagram instanceof DiagramContainer;
+	private Boolean isContainer(final AbstractDiagram diagram) {
+		return diagram instanceof AbstractDiagram;
 	}
 
-	private void correctBorders(final MouseEvent mouseEvent, final DiagramContainer diagram) {
+	private void correctBordersIfNecessary(final MouseEvent mouseEvent,
+			final AbstractDiagram diagram) {
 		if (!mouseEvent.isShiftDown()) {
 			if (diagram != null) {
 				double mouseSceneX = mouseEvent.getSceneX();

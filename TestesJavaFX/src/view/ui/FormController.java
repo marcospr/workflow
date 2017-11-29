@@ -84,6 +84,17 @@ public class FormController {
 	}
 
 	@FXML
+	public void handleRemoveFileButtonAction(final ActionEvent event) {
+		if (tableViewFiles.getItems() != null && !tableViewFiles.getItems().isEmpty()) {
+			File selectedItem = tableViewFiles.getSelectionModel().getSelectedItem();
+			if (selectedItem != null) {
+				tableViewFiles.getItems().remove(selectedItem);
+			}
+		}
+
+	}
+
+	@FXML
 	public void handleCloseButtonAction(final ActionEvent event) {
 		Stage stage = (Stage) closeButton.getScene().getWindow();
 		stage.close();

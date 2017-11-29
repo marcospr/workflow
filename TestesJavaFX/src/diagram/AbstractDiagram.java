@@ -1,23 +1,32 @@
 package diagram;
 
+import command.Command;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import model.ConstantsSystem;
 import model.CoordinatesMouseXY;
 import model.CoordinatesXY;
 
-public class DiagramContainer extends StackPane implements Diagram {
-	private CoordinatesMouseXY coordinatesMouse;
+public abstract class AbstractDiagram extends StackPane implements Selectable, ConnectionPoints {
 	private Boolean select;
-	private DiagramContainer next;
+	private AbstractDiagram next;
+	protected CoordinatesMouseXY coordinatesMouse;
+	private Command command;
 
-	public DiagramContainer(final Node node, final double x, final double y) {
+	public AbstractDiagram(final Node node, final double x, final double y, final Command command) {
 		super(node);
-		select = Boolean.FALSE;
+		this.command = command;
+		setSelect(Boolean.FALSE);
 		coordinatesMouse = new CoordinatesMouseXY();
 
 		setTranslateX(x);
@@ -26,6 +35,52 @@ public class DiagramContainer extends StackPane implements Diagram {
 		setOnMousePressed(diagramOnMousePressedEventHandler);
 		setOnMouseDragged(diagramOnMouseDraggedEventHandler);
 		setOnMouseReleased(diagramOnMouseReleaseEventHandler);
+	}
+
+	public AbstractDiagram(final Node node) {
+		super(node);
+	}
+
+	public final void execute(final ProgressBar progress) {
+		System.out.println("Inicio de processamento");
+		select();
+
+		Task<String> task = new Task<String>() {
+			@Override
+			protected String call() throws Exception {
+
+				try {
+					command.execute();
+					Thread.sleep(2000);
+					AbstractDiagram next = getNext();
+					if (next != null) {
+						next.execute(progress);
+					} else {
+						System.out.println("Fim de processamento");
+					}
+
+				} catch (InterruptedException e) {
+					new RuntimeException("Erro Proccessamento " + e.getMessage());
+				}
+				return "";
+			};
+
+			@Override
+			protected void failed() {
+				Throwable e = getException();
+				throw new RuntimeException(e);
+			}
+
+			@Override
+			protected void succeeded() {
+				unSelect();
+			};
+
+		};
+
+		Thread t = new Thread(task);
+		t.setDaemon(true);
+		t.start();
 
 	}
 
@@ -55,13 +110,15 @@ public class DiagramContainer extends StackPane implements Diagram {
 	}
 
 	@Override
-	public DiagramContainer getNext() {
-		return next;
+	public void select() {
+		setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+		setSelect(Boolean.TRUE);
 	}
 
 	@Override
-	public void setNext(final DiagramContainer next) {
-		this.next = next;
+	public void unSelect() {
+		setEffect(null);
+		setSelect(Boolean.FALSE);
 	}
 
 	@Override
@@ -72,6 +129,26 @@ public class DiagramContainer extends StackPane implements Diagram {
 	@Override
 	public void setSelect(final boolean select) {
 		this.select = select;
+	}
+
+	public AbstractDiagram getNext() {
+		return next;
+	}
+
+	public void setNext(final AbstractDiagram next) {
+		this.next = next;
+	}
+
+	public String getLabel() {
+		String label = "";
+		ObservableList<Node> childrens = getChildren();
+		for (Node node : childrens) {
+			if (node instanceof Text) {
+				label = ((Text) node).getText();
+				break;
+			}
+		}
+		return label;
 	}
 
 	EventHandler<MouseEvent> diagramOnMousePressedEventHandler = mouseEvent -> {
@@ -123,4 +200,5 @@ public class DiagramContainer extends StackPane implements Diagram {
 			getParent().setCursor(Cursor.DEFAULT);
 		}
 	};
+
 }

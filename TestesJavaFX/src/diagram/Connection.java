@@ -5,17 +5,15 @@ import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import model.CoordinatesXY;
 import model.CoordinatesXYInitialFinal;
 
-public class Connection extends Line implements Diagram {
-	private Boolean select;
-	private DiagramContainer startDiagram;
-	private DiagramContainer endDiagram;
+public class Connection extends AbstractLine implements ConnectionPoints {
+	private AbstractDiagram startDiagram;
+	private AbstractDiagram endDiagram;
 	private Arrow arrow;
 
-	public Connection(final DiagramContainer startDiagram, final DiagramContainer endDiagram) {
+	public Connection(final AbstractDiagram startDiagram, final AbstractDiagram endDiagram) {
 		select = Boolean.FALSE;
 		this.startDiagram = startDiagram;
 		this.endDiagram = endDiagram;
@@ -24,23 +22,15 @@ public class Connection extends Line implements Diagram {
 		setStrokeWidth(1);
 
 		// Tira o contorno de efeito
-		if (startDiagram.isSelect()) {
-			((Node) startDiagram).setEffect(null);
-		}
-		if (endDiagram.isSelect()) {
-			((Node) endDiagram).setEffect(null);
-		}
+		startDiagram.unSelect();
+		endDiagram.unSelect();
 
 		CoordinatesXYInitialFinal coordinates =
 				CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
-		if (startDiagram.isSelect()) {
-			((Node) startDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
-		}
-		if (endDiagram.isSelect()) {
-			((Node) endDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
-		}
+		startDiagram.select();
+		endDiagram.select();
 
 		setStartX(coordinates.getInitialX());
 		setStartY(coordinates.getInitialY());
@@ -83,16 +73,6 @@ public class Connection extends Line implements Diagram {
 		setEndY(coordinates.getFinalY());
 	}
 
-	@Override
-	public boolean isSelect() {
-		return select;
-	}
-
-	@Override
-	public void setSelect(final boolean select) {
-		this.select = select;
-	}
-
 	public Arrow getArrow() {
 		return arrow;
 	}
@@ -101,19 +81,19 @@ public class Connection extends Line implements Diagram {
 		this.arrow = arrow;
 	}
 
-	public DiagramContainer getStartDiagramContainer() {
+	public AbstractDiagram getStartDiagramContainer() {
 		return startDiagram;
 	}
 
-	public void setStartDiagramContainer(final DiagramContainer startDiagram) {
+	public void setStartDiagramContainer(final AbstractDiagram startDiagram) {
 		this.startDiagram = startDiagram;
 	}
 
-	public DiagramContainer getEndDiagramContainer() {
+	public AbstractDiagram getEndDiagramContainer() {
 		return endDiagram;
 	}
 
-	public void setEndDiagramContainer(final DiagramContainer endDiagram) {
+	public void setEndDiagramContainer(final ProcessDiagram endDiagram) {
 		this.endDiagram = endDiagram;
 	}
 
@@ -140,18 +120,6 @@ public class Connection extends Line implements Diagram {
 	public CoordinatesXY getPoint3() {
 		Bounds bounds = getBoundsInParent();
 		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY());
-	}
-
-	@Override
-	public DiagramContainer getNext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setNext(final DiagramContainer diagram) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

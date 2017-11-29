@@ -2,6 +2,12 @@ package view.builder;
 
 import diagram.RootContainer;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.stage.Stage;
 import view.ui.ApplicationView;
 
@@ -24,6 +30,14 @@ public class ApplicationViewBuilder {
 		stage.setScene(scene);
 
 		stage.setTitle("MERO - Workflow Técnico");
+
+		BackgroundImage myBI =
+				new BackgroundImage(
+						new Image(getClass().getResourceAsStream("../../diagram/grid_back.jpg"), 0, 0, false,
+								true),
+						BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+						BackgroundSize.DEFAULT);
+		rootContainer.setBackground(new Background(myBI));
 
 		ApplicationView view = new ApplicationView(stage, scene, rootContainer);
 

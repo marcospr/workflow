@@ -1,5 +1,6 @@
 package diagram;
 
+import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import model.CoordinatesXYInitialFinal;
@@ -62,6 +63,18 @@ public class Arrow extends Polygon implements Selectable {
 	@Override
 	public void setSelect(final boolean select) {
 		this.select = select;
+	}
+
+	@Override
+	public void select() {
+		setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
+		setSelect(Boolean.TRUE);
+	}
+
+	@Override
+	public void unSelect() {
+		setEffect(null);
+		setSelect(Boolean.FALSE);
 	}
 
 }
