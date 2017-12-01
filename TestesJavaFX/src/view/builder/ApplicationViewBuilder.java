@@ -1,6 +1,9 @@
 package view.builder;
 
+import controller.MainController;
 import diagram.RootContainer;
+import factory.CommandFactory;
+import helper.PaneHelper;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
@@ -15,15 +18,20 @@ public class ApplicationViewBuilder {
 
 	private Stage stage;
 	private RootContainer rootContainer;
+	private PaneHelper paneHelper;
 
-	public ApplicationViewBuilder(final Stage stage) {
+	public ApplicationViewBuilder(final Stage stage, final PaneHelper paneHelper) {
 		super();
 		this.stage = stage;
+		this.paneHelper = paneHelper;
 	}
 
 	public ApplicationView builder() {
 
-		rootContainer = new RootContainer();
+		rootContainer = new RootContainer(paneHelper);
+
+		MainController mainController =
+				new MainController(rootContainer, new CommandFactory(), paneHelper);
 
 		Scene scene = new Scene(rootContainer, 800, 600);
 
@@ -31,15 +39,14 @@ public class ApplicationViewBuilder {
 
 		stage.setTitle("MERO - Workflow Técnico");
 
-		BackgroundImage myBI =
-				new BackgroundImage(
-						new Image(getClass().getResourceAsStream("../../diagram/grid_back.jpg"), 0, 0, false,
-								true),
-						BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
-						BackgroundSize.DEFAULT);
+		BackgroundImage myBI = new BackgroundImage(
+				new Image(getClass().getResourceAsStream("../../resources/grid_back.jpg"), 0, 0, false,
+						true),
+				BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT, BackgroundPosition.DEFAULT,
+				BackgroundSize.DEFAULT);
 		rootContainer.setBackground(new Background(myBI));
 
-		ApplicationView view = new ApplicationView(stage, scene, rootContainer);
+		ApplicationView view = new ApplicationView(stage, scene, rootContainer, mainController);
 
 		return view;
 	}
@@ -57,5 +64,9 @@ public class ApplicationViewBuilder {
 
 	public void setStage(final Stage stage) {
 		this.stage = stage;
+	}
+
+	public void setPaneHelper(final PaneHelper paneHelper) {
+		this.paneHelper = paneHelper;
 	}
 }

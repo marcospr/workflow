@@ -1,5 +1,6 @@
 package view.ui;
 
+import controller.MainController;
 import diagram.RootContainer;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -9,16 +10,22 @@ public class ApplicationView {
 	private RootContainer pane;
 	private Scene scene;
 	private Stage stage;
+	private MainController mainController;
 
 	public ApplicationView(final Stage stage, final Scene scene, final RootContainer pane) {
 		super();
 		this.stage = stage;
 		this.scene = scene;
 		this.pane = pane;
-		// this.path = path;
 	}
 
-	public ApplicationView() {}
+	public ApplicationView(final Stage stage, final Scene scene, final RootContainer pane,
+			final MainController mainController) {
+		this.stage = stage;
+		this.scene = scene;
+		this.pane = pane;
+		this.mainController = mainController;
+	}
 
 	public RootContainer getPane() {
 		return pane;
@@ -42,5 +49,13 @@ public class ApplicationView {
 
 	public void setStage(final Stage stage) {
 		this.stage = stage;
+	}
+
+	public MainController getMainController() {
+		return mainController;
+	}
+
+	public void setMainController(final MainController mainController) {
+		this.mainController = mainController;
 	}
 }

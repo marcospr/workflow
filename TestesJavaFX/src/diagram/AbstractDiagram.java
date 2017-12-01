@@ -50,7 +50,7 @@ public abstract class AbstractDiagram extends StackPane implements Selectable, C
 			protected String call() throws Exception {
 
 				try {
-					command.execute();
+					command.execute();// params
 					Thread.sleep(2000);
 					AbstractDiagram next = getNext();
 					if (next != null) {
