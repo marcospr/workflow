@@ -1,16 +1,17 @@
 package br.unicamp.cepetro.unisim.mero.gui.app.diagram;
 
 import br.unicamp.cepetro.unisim.mero.gui.app.helper.CalculatorCoordinatesHelper;
-import br.unicamp.cepetro.unisim.mero.gui.app.model.CoordinatesXY;
+import br.unicamp.cepetro.unisim.mero.gui.app.model.ConstantsSystem;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.CoordinatesXYInitialFinal;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeLineCap;
 
-public class Connection extends AbstractLine implements ConnectionPoints {
+public class Connection extends AbstractLine {
 	private AbstractDiagram startDiagram;
 	private AbstractDiagram endDiagram;
+	private CoordinatesXYInitialFinal coordinates;
 	private Arrow arrow;
 
 	public Connection(final AbstractDiagram startDiagram, final AbstractDiagram endDiagram) {
@@ -18,24 +19,24 @@ public class Connection extends AbstractLine implements ConnectionPoints {
 		this.startDiagram = startDiagram;
 		this.endDiagram = endDiagram;
 		this.startDiagram.setNext(this.endDiagram);
-		setStroke(Color.GREY);
-		setStrokeWidth(1);
 
 		// Tira o contorno de efeito
 		startDiagram.unSelect();
 		endDiagram.unSelect();
 
-		CoordinatesXYInitialFinal coordinates =
-				CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
+		coordinates = CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
 		startDiagram.select();
 		endDiagram.select();
 
-		setStartX(coordinates.getInitialX());
-		setStartY(coordinates.getInitialY());
-		setEndX(coordinates.getFinalX());
-		setEndY(coordinates.getFinalY());
+		// Set coordinates
+		setCoordinatesControl(coordinates);
+
+		setStroke(Color.GRAY);
+		setStrokeWidth(2);
+		setStrokeLineCap(StrokeLineCap.ROUND);
+		setFill(Color.TRANSPARENT);
 
 		// startXProperty().bind(startProcess.translateXProperty().add(50));
 		// startYProperty().bind(startProcess.translateYProperty().add(25));
@@ -47,6 +48,91 @@ public class Connection extends AbstractLine implements ConnectionPoints {
 		arrow = new Arrow(this);
 	}
 
+	private void setCoordinatesControl(final CoordinatesXYInitialFinal coordinates) {
+		setStartX(coordinates.getInitialX());
+		setStartY(coordinates.getInitialY());
+		setEndX(coordinates.getFinalX());
+		setEndY(coordinates.getFinalY());
+
+		if (coordinates.getInitialtPointIndex() == 2 && coordinates.getFinalPointIndex() == 0
+				|| coordinates.getInitialtPointIndex() == 0 && coordinates.getFinalPointIndex() == 2) {
+
+			if (coordinates.getInitialX().doubleValue() <= coordinates.getFinalX().doubleValue()) {
+				setControlX1(coordinates.getInitialX() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+				setControlY1(coordinates.getInitialY());
+				setControlX2(coordinates.getFinalX() - ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+				setControlY2(coordinates.getFinalY());
+
+			} else if (coordinates.getInitialX().doubleValue() > coordinates.getFinalX().doubleValue()) {
+				setControlX1(coordinates.getInitialX() - ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+				setControlY1(coordinates.getInitialY());
+				setControlX2(coordinates.getFinalX() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+				setControlY2(coordinates.getFinalY());
+			}
+		} else if (coordinates.getInitialtPointIndex() == 1 && coordinates.getFinalPointIndex() == 3
+				|| coordinates.getInitialtPointIndex() == 3 && coordinates.getFinalPointIndex() == 1) {
+
+			if (coordinates.getInitialY().doubleValue() <= coordinates.getFinalY().doubleValue()) {
+				setControlX1(coordinates.getInitialX());
+				setControlY1(coordinates.getInitialY() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+				setControlX2(coordinates.getFinalX());
+				setControlY2(coordinates.getFinalY() - ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+
+			} else if (coordinates.getInitialY().doubleValue() > coordinates.getFinalY().doubleValue()) {
+				setControlX1(coordinates.getInitialX());
+				setControlY1(coordinates.getInitialY() - ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+				setControlX2(coordinates.getFinalX());
+				setControlY2(coordinates.getFinalY() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
+			}
+
+		} else {
+
+			if (coordinates.getInitialY() <= coordinates.getFinalY()) {
+
+				if (coordinates.getInitialtPointIndex() == 2 && coordinates.getFinalPointIndex() == 3
+						|| coordinates.getInitialtPointIndex() == 0 && coordinates.getFinalPointIndex() == 3) {
+
+					setControlX1(coordinates.getFinalX());
+					setControlY1(coordinates.getInitialY());
+					setControlX2(coordinates.getFinalX());
+					setControlY2(coordinates.getInitialY());
+
+				} else if (coordinates.getInitialtPointIndex() == 1 && coordinates.getFinalPointIndex() == 0
+						|| coordinates.getInitialtPointIndex() == 1 && coordinates.getFinalPointIndex() == 2) {
+
+					setControlX1(coordinates.getInitialX());
+					setControlY1(coordinates.getFinalY());
+					setControlX2(coordinates.getInitialX());
+					setControlY2(coordinates.getFinalY());
+
+				}
+
+			} else if (coordinates.getInitialY() > coordinates.getFinalY()) {
+
+				if (coordinates.getInitialtPointIndex() == 3 && coordinates.getFinalPointIndex() == 0
+						|| coordinates.getInitialtPointIndex() == 3 && coordinates.getFinalPointIndex() == 2) {
+
+					setControlX1(coordinates.getInitialX());
+					setControlY1(coordinates.getFinalY());
+					setControlX2(coordinates.getInitialX());
+					setControlY2(coordinates.getFinalY());
+
+				} else if (coordinates.getInitialtPointIndex() == 2 && coordinates.getFinalPointIndex() == 1
+						|| coordinates.getInitialtPointIndex() == 0 && coordinates.getFinalPointIndex() == 1) {
+
+					setControlX1(coordinates.getFinalX());
+					setControlY1(coordinates.getInitialY());
+					setControlX2(coordinates.getFinalX());
+					setControlY2(coordinates.getInitialY());
+
+				}
+
+			}
+
+		}
+
+	}
+
 	public void recalculateXY() {
 		// Tira o contorno de efeito
 		if (startDiagram.isSelect()) {
@@ -56,8 +142,7 @@ public class Connection extends AbstractLine implements ConnectionPoints {
 			((Node) endDiagram).setEffect(null);
 		}
 
-		CoordinatesXYInitialFinal coordinates =
-				CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
+		coordinates = CalculatorCoordinatesHelper.calculatePointsXY(startDiagram, endDiagram);
 
 		// Retorno o efeito
 		if (startDiagram.isSelect()) {
@@ -67,10 +152,7 @@ public class Connection extends AbstractLine implements ConnectionPoints {
 			((Node) endDiagram).setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
 		}
 
-		setStartX(coordinates.getInitialX());
-		setStartY(coordinates.getInitialY());
-		setEndX(coordinates.getFinalX());
-		setEndY(coordinates.getFinalY());
+		setCoordinatesControl(coordinates);
 	}
 
 	public Arrow getArrow() {
@@ -97,29 +179,8 @@ public class Connection extends AbstractLine implements ConnectionPoints {
 		this.endDiagram = endDiagram;
 	}
 
-	@Override
-	public CoordinatesXY getPoint0() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMinX(), bounds.getMinY() + bounds.getHeight() / 2);
-	}
-
-	@Override
-	public CoordinatesXY getPoint1() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMaxY());
-
-	}
-
-	@Override
-	public CoordinatesXY getPoint2() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMaxX(), bounds.getMinY() + bounds.getHeight() / 2);
-	}
-
-	@Override
-	public CoordinatesXY getPoint3() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY());
+	public CoordinatesXYInitialFinal getCoordinates() {
+		return coordinates;
 	}
 
 }

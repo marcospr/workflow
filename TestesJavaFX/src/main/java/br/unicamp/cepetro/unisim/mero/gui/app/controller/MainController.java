@@ -411,7 +411,6 @@ public class MainController {
 			if (mouseEvent.isShiftDown()) {
 				endDiagramContainer = lastDiagramHandle;
 				if (shouldCreateConnection()) {
-					// Cria Arrow
 					if (!existsConnection(startDiagramContainer, endDiagramContainer)) {
 						createConnection(startDiagramContainer, endDiagramContainer);
 					}
@@ -468,16 +467,18 @@ public class MainController {
 	}
 
 	private boolean shouldCreateConnection() {
-		// Rules
-		boolean isAutoConnection = startDiagramContainer.equals(endDiagramContainer);
-		boolean isCircularConnection = startDiagramContainer.equals(endDiagramContainer.getNext());
-		boolean isStartingFromEndDiagram = startDiagramContainer instanceof EndDiagram;
-		boolean isConnectingWithStartDiagram = endDiagramContainer instanceof StartDiagram;
-		boolean isWithoutConnector = startDiagramContainer.getNext() == null;
+		boolean result = false;
+		if (startDiagramContainer != null && endDiagramContainer != null) {
+			// Rules
+			boolean isAutoConnection = startDiagramContainer.equals(endDiagramContainer);
+			boolean isCircularConnection = startDiagramContainer.equals(endDiagramContainer.getNext());
+			boolean isStartingFromEndDiagram = startDiagramContainer instanceof EndDiagram;
+			boolean isConnectingWithStartDiagram = endDiagramContainer instanceof StartDiagram;
+			boolean isWithoutConnector = startDiagramContainer.getNext() == null;
 
-		boolean result = startDiagramContainer != null && endDiagramContainer != null
-				&& !isAutoConnection && !isCircularConnection && !isStartingFromEndDiagram
-				&& !isConnectingWithStartDiagram && isWithoutConnector;
+			result = !isAutoConnection && !isCircularConnection && !isStartingFromEndDiagram
+					&& !isConnectingWithStartDiagram && isWithoutConnector;
+		}
 		return result;
 	}
 
@@ -568,6 +569,7 @@ public class MainController {
 					Arrow arrow = new Arrow(connection);
 					connection.setArrow(arrow);
 					root.getChildren().add(connection.getArrow());
+					arrow.toFront();
 				}
 			}
 		}
@@ -630,6 +632,7 @@ public class MainController {
 
 		root.getChildren().add(conn);
 		root.getChildren().add(conn.getArrow());
+		conn.getArrow().toFront();
 	}
 
 }

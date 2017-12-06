@@ -83,31 +83,6 @@ public abstract class AbstractDiagram extends StackPane implements Selectable, C
 	}
 
 	@Override
-	public CoordinatesXY getPoint0() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMinX(), bounds.getMinY() + bounds.getHeight() / 2);
-	}
-
-	@Override
-	public CoordinatesXY getPoint1() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMaxY());
-
-	}
-
-	@Override
-	public CoordinatesXY getPoint2() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMaxX(), bounds.getMinY() + bounds.getHeight() / 2);
-	}
-
-	@Override
-	public CoordinatesXY getPoint3() {
-		Bounds bounds = getBoundsInParent();
-		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY());
-	}
-
-	@Override
 	public void select() {
 		setEffect(new DropShadow(10, Color.DEEPSKYBLUE));
 		setSelect(Boolean.TRUE);
@@ -200,4 +175,32 @@ public abstract class AbstractDiagram extends StackPane implements Selectable, C
 		}
 	}
 
+	@Override
+	public CoordinatesXY getPoint0() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX(), bounds.getMinY() + bounds.getHeight() / 2,
+				INDEX_POINT_ZERO);
+	}
+
+	@Override
+	public CoordinatesXY getPoint1() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMaxY(),
+				INDEX_POINT_ONE);
+
+	}
+
+	@Override
+	public CoordinatesXY getPoint2() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMaxX(), bounds.getMinY() + bounds.getHeight() / 2,
+				INDEX_POINT_TWO);
+	}
+
+	@Override
+	public CoordinatesXY getPoint3() {
+		Bounds bounds = getBoundsInParent();
+		return new CoordinatesXY(bounds.getMinX() + bounds.getWidth() / 2, bounds.getMinY(),
+				INDEX_POINT_THREE);
+	}
 }

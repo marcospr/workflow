@@ -1,58 +1,61 @@
 package br.unicamp.cepetro.unisim.mero.gui.app.diagram;
 
+import br.unicamp.cepetro.unisim.mero.gui.app.model.ConstantsSystem;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.CoordinatesXYInitialFinal;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Circle;
 
-public class Arrow extends Polygon implements Selectable {
+public class Arrow extends StackPane implements Selectable {
 	private Boolean select;
+	private Circle circle;
+	private ImageView imageView;
+	private Image image;;
 
 	public Arrow(final Connection connection) {
-		setStroke(Color.GREY);
-		select = Boolean.FALSE;
-		CoordinatesXYInitialFinal coordinates = new CoordinatesXYInitialFinal();
-		double startX = 0;
-		double startY = 0;
-		double endx = 0;
-		double endy = 0;
+		setTranslateX(connection.getCoordinates().getFinalX());
+		setTranslateY(connection.getCoordinates().getFinalY());
 
-		// for (Connection connection : ((RootContainer) getParent()).getConnectionsFromContainer()) {
-		// if (connection.getArrow().equals(this)) {
-		startX = connection.getStartX();
-		startY = connection.getStartY();
-		endx = connection.getEndX();
-		endy = connection.getEndY();
-		coordinates.setInitialX(startX);
-		coordinates.setInitialY(startY);
-		coordinates.setFinalX(endx);
-		coordinates.setFinalY(endy);
+		createCircle(connection.getEndX(), connection.getEndY());
+		createImageView(connection.getCoordinates());
 
-		setTranslateX(endx);
-		setTranslateY(endy);
-		// break;
-		// }
-		// }
-
-		setRotate(getCalculatedRotation(coordinates));
-
+		getChildren().addAll(circle, imageView);
 	}
 
-	private double getCalculatedRotation(final CoordinatesXYInitialFinal coordinates) {
-		return getCalculatedAngle(coordinates) - 90;
+	private void createImageView(final CoordinatesXYInitialFinal coordinates) {
+		imageView = new ImageView();
 
+		if (coordinates.getFinalPointIndex() == 0) {
+			// right
+			image = new Image(this.getClass()
+					.getResourceAsStream(ConstantsSystem.PATH_IMAGES.concat("arrow_right.png")));
+		} else if (coordinates.getFinalPointIndex() == 1) {
+			// up
+			image = new Image(
+					this.getClass().getResourceAsStream(ConstantsSystem.PATH_IMAGES.concat("arrow_up.png")));
+		} else if (coordinates.getFinalPointIndex() == 2) {
+			// left
+			image = new Image(this.getClass()
+					.getResourceAsStream(ConstantsSystem.PATH_IMAGES.concat("arrow_left.png")));
+		} else {
+			// down
+			image = new Image(this.getClass()
+					.getResourceAsStream(ConstantsSystem.PATH_IMAGES.concat("arrow_down.png")));
+		}
+		imageView.setImage(image);
 	}
 
-	private double getCalculatedAngle(final CoordinatesXYInitialFinal coordinates) {
-		double startX = coordinates.getInitialX();
-		double startY = coordinates.getInitialY();
-		double endx = coordinates.getFinalX();
-		double endy = coordinates.getFinalY();
-
-		getPoints().addAll(new Double[] {0.0, 5.0, -5.0, -5.0, 5.0, -5.0});
-
-		return Math.atan2(endy - startY, endx - startX) * 180 / Math.PI;
-
+	private void createCircle(final double x, final double y) {
+		circle = new Circle();
+		circle.setCenterX(x);
+		circle.setCenterY(y);
+		circle.setRadius(10);
+		circle.setStroke(Color.GREY);
+		circle.setFill(Color.ANTIQUEWHITE);
+		circle.setStrokeWidth(1.5);
 	}
 
 	@Override
@@ -76,5 +79,4 @@ public class Arrow extends Polygon implements Selectable {
 		setEffect(null);
 		setSelect(Boolean.FALSE);
 	}
-
 }

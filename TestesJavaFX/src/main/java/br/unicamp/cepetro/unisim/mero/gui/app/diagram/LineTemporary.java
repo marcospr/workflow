@@ -1,8 +1,9 @@
 package br.unicamp.cepetro.unisim.mero.gui.app.diagram;
 
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 
-public class LineTemporary extends AbstractLine {
+public class LineTemporary extends Line {
 
 	public LineTemporary(final double startX, final double startY, final double endX,
 			final double endY) {

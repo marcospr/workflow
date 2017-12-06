@@ -3,6 +3,11 @@ package br.unicamp.cepetro.unisim.mero.gui.app.diagram;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.CoordinatesXY;
 
 public interface ConnectionPoints {
+	static final int INDEX_POINT_ZERO = 0;
+	static final int INDEX_POINT_ONE = 1;
+	static final int INDEX_POINT_TWO = 2;
+	static final int INDEX_POINT_THREE = 3;
+
 	CoordinatesXY getPoint0();
 
 	CoordinatesXY getPoint1();
