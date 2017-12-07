@@ -15,18 +15,18 @@ import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandDS;
 import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandGAS;
 import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandGU;
 import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandHLDG;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.AbstractDiagram;
+import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Diagram;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Arrow;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Connection;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.End;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.EndDiagram;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.LineTemporary;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.ProcessDiagram;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Processo;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Selectable;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Start;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.StartDiagram;
 import br.unicamp.cepetro.unisim.mero.gui.app.factory.CommandFactory;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.End;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.LineTemporary;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.Processo;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.Start;
 import br.unicamp.cepetro.unisim.mero.gui.app.helper.PaneHelper;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.CommandType;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.ConstantsSystem;
@@ -53,9 +53,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -72,8 +70,8 @@ public class MainController {
 	@Autowired
 	private CommandFactory commandFactory;
 
-	private AbstractDiagram startDiagramContainer;
-	private AbstractDiagram endDiagramContainer;
+	private Diagram startDiagramContainer;
+	private Diagram endDiagramContainer;
 	private Set<Selectable> selectDiagrams;
 	//
 
@@ -152,18 +150,19 @@ public class MainController {
 	}
 
 	private StackPane createButtonStackPane(final Command command) {
-		Rectangle rectangle = new Rectangle(60, 40, Color.WHITE);
-		rectangle.setStroke(Color.GREY);
-		rectangle.setStrokeWidth(1.0);
-		rectangle.setArcWidth(20);
-		rectangle.setArcHeight(20);
-		StackPane.setMargin(rectangle, new Insets(3));
+		Processo processo = new Processo(60, 40);
+		// Rectangle rectangle = new Rectangle(60, 40, Color.WHITE);
+		// rectangle.setStroke(Color.GREY);
+		// rectangle.setStrokeWidth(1.0);
+		// rectangle.setArcWidth(20);
+		// rectangle.setArcHeight(20);
+		StackPane.setMargin(processo, new Insets(3));
 
 		StackPane stackPane = new StackPane();
 		Text label = new Text(command.getName());
 		label.setStyle("-fx-font-weight: bold;");
 		label.fillProperty().set(Color.INDIANRED);
-		stackPane.getChildren().addAll(rectangle, label);
+		stackPane.getChildren().addAll(processo, label);
 
 		return stackPane;
 	}
@@ -236,17 +235,9 @@ public class MainController {
 				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
 
-				End end = new End(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
-				Text texto = new Text("End");
-				texto.fillProperty().set(Color.INDIANRED);
-				texto.setTextAlignment(TextAlignment.CENTER);
-				texto.setStyle("-fx-font-weight: bold;");
-
-				startDiagramContainer = new EndDiagram(end, mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+				startDiagramContainer = new EndDiagram(mouseEvent.getSceneX(), mouseEvent.getSceneY(),
 						commandFactory.createCommand(CommandType.End));
 
-				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
-				startDiagramContainer.getChildren().add(texto);
 				root.getChildren().add(startDiagramContainer);
 			} else {
 				startDiagramContainer = null;
@@ -276,20 +267,10 @@ public class MainController {
 
 				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
-				Start start =
-						new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
 
-				Text texto = new Text("Start");
-				texto.fillProperty().set(Color.INDIANRED);
-				texto.setTextAlignment(TextAlignment.CENTER);
-				texto.setStyle("-fx-font-weight: bold;");
+				startDiagramContainer = new StartDiagram(mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+						commandFactory.createCommand(CommandType.Start));
 
-				startDiagramContainer = new StartDiagram(start, mouseEvent.getSceneX(),
-						mouseEvent.getSceneY(), commandFactory.createCommand(CommandType.Start));
-
-				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
-
-				startDiagramContainer.getChildren().add(texto);
 				root.getChildren().add(startDiagramContainer);
 			} else {
 				startDiagramContainer = null;
@@ -331,29 +312,14 @@ public class MainController {
 			coordinatesMouse.setStartTranslateX(mouseEvent.getSceneX());
 			coordinatesMouse.setStartTranslateY(mouseEvent.getSceneY());
 
-			Processo process = new Processo();
-
 			// index 0-> Rectangle, 1-> Text
 			Text text =
 					(Text) ((StackPane) ((Button) mouseEvent.getSource()).getGraphic()).getChildren().get(1);
 
-			Text texto = new Text(text.getText());
-			texto.fillProperty().set(Color.INDIANRED);
-			texto.setStyle("-fx-font-weight: bold;");
-
 			CommandType commandType = Enum.valueOf(CommandType.class, text.getText());
 
-			startDiagramContainer = new ProcessDiagram(process, mouseEvent.getSceneX(),
-					mouseEvent.getSceneY(), commandFactory.createCommand(commandType));
-
-			Image imageGear =
-					new Image(getClass().getResourceAsStream(ConstantsSystem.PATH_IMAGES.concat("gear.png")));
-			ImageView imageViewGear = new ImageView(imageGear);
-
-			texto.setTranslateX(startDiagramContainer.getLayoutX() + 20);
-			imageViewGear.setTranslateX(startDiagramContainer.getLayoutX() - 20);
-
-			startDiagramContainer.getChildren().addAll(texto, imageViewGear);
+			startDiagramContainer = new ProcessDiagram(mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+					commandFactory.createCommand(commandType), text.getText());
 
 			startDiagramContainer.setOnMouseClicked(handleProcessDiagramOnMouseClicked);
 
@@ -380,8 +346,8 @@ public class MainController {
 		// handlers Root
 		root.setOnMousePressed(mouseEvent -> {
 			root.setCursor(Cursor.HAND);
-			AbstractDiagram diagram = PaneHelper.getSpecificNodeFromCoordinatesXY(mouseEvent.getX(),
-					mouseEvent.getY(), root, AbstractDiagram.class);
+			Diagram diagram = PaneHelper.getSpecificNodeFromCoordinatesXY(mouseEvent.getX(),
+					mouseEvent.getY(), root, Diagram.class);
 
 			if (diagram != null) {
 				startDiagramContainer = diagram;
@@ -395,8 +361,8 @@ public class MainController {
 		});
 
 		root.setOnMouseDragged(mouseEvent -> {
-			AbstractDiagram lastProcessHandled = PaneHelper.getSpecificNodeFromCoordinatesXY(
-					mouseEvent.getX(), mouseEvent.getY(), root, AbstractDiagram.class);
+			Diagram lastProcessHandled = PaneHelper.getSpecificNodeFromCoordinatesXY(
+					mouseEvent.getX(), mouseEvent.getY(), root, Diagram.class);
 			if (lastProcessHandled != null) {
 				changeConnection(lastProcessHandled);
 			} else {
@@ -406,8 +372,8 @@ public class MainController {
 		});
 
 		root.setOnMouseReleased(mouseEvent -> {
-			AbstractDiagram lastDiagramHandle = PaneHelper.getSpecificNodeFromCoordinatesXY(
-					mouseEvent.getX(), mouseEvent.getY(), root, AbstractDiagram.class);
+			Diagram lastDiagramHandle = PaneHelper.getSpecificNodeFromCoordinatesXY(
+					mouseEvent.getX(), mouseEvent.getY(), root, Diagram.class);
 			if (mouseEvent.isShiftDown()) {
 				endDiagramContainer = lastDiagramHandle;
 				if (shouldCreateConnection()) {
@@ -483,7 +449,7 @@ public class MainController {
 	}
 
 	private void adjustBordersIfNecessary(final MouseEvent mouseEvent,
-			final AbstractDiagram diagram) {
+			final Diagram diagram) {
 		if (!mouseEvent.isShiftDown()) {
 			if (diagram != null) {
 				diagram.adjustBorders(mouseEvent.getSceneX(), mouseEvent.getSceneY());
@@ -496,7 +462,7 @@ public class MainController {
 		try {
 			// Carrega
 			FXMLLoader loader = new FXMLLoader();
-			loader.setLocation(this.getClass().getResource("../view/form.fxml"));
+			loader.setLocation(MainController.class.getResource("../view/form.fxml"));
 
 			AnchorPane anchorPane;
 			anchorPane = (AnchorPane) loader.load();
@@ -516,12 +482,12 @@ public class MainController {
 		}
 	}
 
-	private boolean startOrEndExists(final Class clazz) {
+	private <T> boolean startOrEndExists(final Class<T> clazz) {
 		boolean result = false;
 		ObservableList<Node> nodesContainerMain = root.getChildren();
 		for (Node node : nodesContainerMain) {
-			if (node instanceof AbstractDiagram) {
-				AbstractDiagram diagramContainer = (AbstractDiagram) node;
+			if (node instanceof Diagram) {
+				Diagram diagramContainer = (Diagram) node;
 
 				ObservableList<Node> childrens = diagramContainer.getChildren();
 				for (Node children : childrens) {
@@ -553,7 +519,7 @@ public class MainController {
 		}
 	}
 
-	private void changeConnection(final AbstractDiagram lastDiagramHandled) {
+	private void changeConnection(final Diagram lastDiagramHandled) {
 
 		if (lastDiagramHandled != null) {
 
@@ -613,8 +579,8 @@ public class MainController {
 		}
 	}
 
-	private boolean existsConnection(final AbstractDiagram startDiagramContainer,
-			final AbstractDiagram endDiagramContainer) {
+	private boolean existsConnection(final Diagram startDiagramContainer,
+			final Diagram endDiagramContainer) {
 		boolean result = false;
 		List<Connection> connections = PaneHelper.getConnectionFromPane(root);
 		for (Connection connection : connections) {
@@ -626,8 +592,8 @@ public class MainController {
 		return result;
 	}
 
-	private void createConnection(final AbstractDiagram startDiagramContainer,
-			final AbstractDiagram endDiagramContainer) {
+	private void createConnection(final Diagram startDiagramContainer,
+			final Diagram endDiagramContainer) {
 		Connection conn = new Connection(startDiagramContainer, endDiagramContainer);
 
 		root.getChildren().add(conn);

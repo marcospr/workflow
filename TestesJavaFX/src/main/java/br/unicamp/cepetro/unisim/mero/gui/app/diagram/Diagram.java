@@ -17,14 +17,13 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
-public abstract class AbstractDiagram extends StackPane implements Selectable, ConnectionPoints {
+public abstract class Diagram extends StackPane implements Selectable, ConnectionPoints {
 	private Boolean select;
-	private AbstractDiagram next;
+	private Diagram next;
 	protected CoordinatesMouseXY coordinatesMouse;
 	private Command command;
 
-	public AbstractDiagram(final Node node, final double x, final double y, final Command command) {
-		super(node);
+	public Diagram(final double x, final double y, final Command command) {
 		this.command = command;
 		setSelect(Boolean.FALSE);
 		coordinatesMouse = new CoordinatesMouseXY();
@@ -37,9 +36,11 @@ public abstract class AbstractDiagram extends StackPane implements Selectable, C
 		setOnMouseReleased(diagramOnMouseReleaseEventHandler);
 	}
 
-	public AbstractDiagram(final Node node) {
+	public Diagram(final Node node) {
 		super(node);
 	}
+
+	public Diagram() {}
 
 	public final void execute(final ProgressBar progress) {
 		System.out.println("Inicio de processamento");
@@ -51,7 +52,7 @@ public abstract class AbstractDiagram extends StackPane implements Selectable, C
 				try {
 					command.execute();// params
 					Thread.sleep(2000);
-					AbstractDiagram next = getNext();
+					Diagram next = getNext();
 					if (next != null) {
 						next.execute(progress);
 					} else {
@@ -104,11 +105,11 @@ public abstract class AbstractDiagram extends StackPane implements Selectable, C
 		this.select = select;
 	}
 
-	public AbstractDiagram getNext() {
+	public Diagram getNext() {
 		return next;
 	}
 
-	public void setNext(final AbstractDiagram next) {
+	public void setNext(final Diagram next) {
 		this.next = next;
 	}
 

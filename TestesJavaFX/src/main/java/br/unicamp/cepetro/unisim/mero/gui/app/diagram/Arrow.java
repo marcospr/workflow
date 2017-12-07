@@ -13,9 +13,11 @@ public class Arrow extends StackPane implements Selectable {
 	private Boolean select;
 	private Circle circle;
 	private ImageView imageView;
-	private Image image;;
+	private Image image;
+	private Connection connection;
 
 	public Arrow(final Connection connection) {
+		this.connection = connection;
 		setTranslateX(connection.getCoordinates().getFinalX());
 		setTranslateY(connection.getCoordinates().getFinalY());
 
@@ -78,5 +80,17 @@ public class Arrow extends StackPane implements Selectable {
 	public void unSelect() {
 		setEffect(null);
 		setSelect(Boolean.FALSE);
+	}
+
+	public Circle getCircle() {
+		return circle;
+	}
+
+	public ImageView getImageView() {
+		return imageView;
+	}
+
+	public Connection getConnection() {
+		return connection;
 	}
 }

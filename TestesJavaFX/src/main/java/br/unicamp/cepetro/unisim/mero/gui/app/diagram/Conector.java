@@ -8,12 +8,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.StrokeLineCap;
 
-public class AbstractLine extends CubicCurve implements Selectable, ConnectionPoints {
+public class Conector extends CubicCurve implements Selectable, ConnectionPoints {
 	protected Boolean select;
 
-	public AbstractLine() {}
+	public Conector() {}
 
-	public AbstractLine(final double startX, final double startY, final double endX,
+	public Conector(final double startX, final double startY, final double endX,
 			final double endY) {
 
 		super(startX, startY, startX + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE, startY,

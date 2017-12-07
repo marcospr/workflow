@@ -1,8 +1,11 @@
-package br.unicamp.cepetro.unisim.mero.gui.app.diagram;
+package br.unicamp.cepetro.unisim.mero.gui.app.figure;
+
+import org.springframework.stereotype.Component;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
+@Component
 public class LineTemporary extends Line {
 
 	public LineTemporary(final double startX, final double startY, final double endX,
@@ -11,4 +14,6 @@ public class LineTemporary extends Line {
 		setStroke(Color.CORNFLOWERBLUE);
 		getStrokeDashArray().addAll(2d, 5d);
 	}
+
+	public LineTemporary() {}
 }

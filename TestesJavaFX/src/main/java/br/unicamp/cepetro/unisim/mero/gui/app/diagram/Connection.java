@@ -8,13 +8,13 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 
-public class Connection extends AbstractLine {
-	private AbstractDiagram startDiagram;
-	private AbstractDiagram endDiagram;
+public class Connection extends Conector {
+	private Diagram startDiagram;
+	private Diagram endDiagram;
 	private CoordinatesXYInitialFinal coordinates;
 	private Arrow arrow;
 
-	public Connection(final AbstractDiagram startDiagram, final AbstractDiagram endDiagram) {
+	public Connection(final Diagram startDiagram, final Diagram endDiagram) {
 		select = Boolean.FALSE;
 		this.startDiagram = startDiagram;
 		this.endDiagram = endDiagram;
@@ -38,13 +38,6 @@ public class Connection extends AbstractLine {
 		setStrokeLineCap(StrokeLineCap.ROUND);
 		setFill(Color.TRANSPARENT);
 
-		// startXProperty().bind(startProcess.translateXProperty().add(50));
-		// startYProperty().bind(startProcess.translateYProperty().add(25));
-		// endXProperty().bind(endProcess.translateXProperty().add(50));
-		// endYProperty().bind(endProcess.translateYProperty().add(25));
-
-		// this.startProcess.addConnection(this);
-		// this.endProcess.addConnection(this);
 		arrow = new Arrow(this);
 	}
 
@@ -54,25 +47,29 @@ public class Connection extends AbstractLine {
 		setEndX(coordinates.getFinalX());
 		setEndY(coordinates.getFinalY());
 
-		if (coordinates.getInitialtPointIndex() == 2 && coordinates.getFinalPointIndex() == 0
-				|| coordinates.getInitialtPointIndex() == 0 && coordinates.getFinalPointIndex() == 2) {
+		if (coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_TWO
+				&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_ZERO
+				|| coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_ZERO
+						&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_TWO) {
 
-			if (coordinates.getInitialX().doubleValue() <= coordinates.getFinalX().doubleValue()) {
+			if (coordinates.getInitialX() <= coordinates.getFinalX()) {
 				setControlX1(coordinates.getInitialX() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
 				setControlY1(coordinates.getInitialY());
 				setControlX2(coordinates.getFinalX() - ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
 				setControlY2(coordinates.getFinalY());
 
-			} else if (coordinates.getInitialX().doubleValue() > coordinates.getFinalX().doubleValue()) {
+			} else if (coordinates.getInitialX() > coordinates.getFinalX()) {
 				setControlX1(coordinates.getInitialX() - ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
 				setControlY1(coordinates.getInitialY());
 				setControlX2(coordinates.getFinalX() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
 				setControlY2(coordinates.getFinalY());
 			}
-		} else if (coordinates.getInitialtPointIndex() == 1 && coordinates.getFinalPointIndex() == 3
-				|| coordinates.getInitialtPointIndex() == 3 && coordinates.getFinalPointIndex() == 1) {
+		} else if (coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_ONE
+				&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_THREE
+				|| coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_THREE
+						&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_ONE) {
 
-			if (coordinates.getInitialY().doubleValue() <= coordinates.getFinalY().doubleValue()) {
+			if (coordinates.getInitialY() <= coordinates.getFinalY()) {
 				setControlX1(coordinates.getInitialX());
 				setControlY1(coordinates.getInitialY() + ConstantsSystem.FIXED_CONTROL_CUBIC_CURVE);
 				setControlX2(coordinates.getFinalX());
@@ -89,16 +86,20 @@ public class Connection extends AbstractLine {
 
 			if (coordinates.getInitialY() <= coordinates.getFinalY()) {
 
-				if (coordinates.getInitialtPointIndex() == 2 && coordinates.getFinalPointIndex() == 3
-						|| coordinates.getInitialtPointIndex() == 0 && coordinates.getFinalPointIndex() == 3) {
+				if (coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_TWO
+						&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_THREE
+						|| coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_ZERO
+								&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_THREE) {
 
 					setControlX1(coordinates.getFinalX());
 					setControlY1(coordinates.getInitialY());
 					setControlX2(coordinates.getFinalX());
 					setControlY2(coordinates.getInitialY());
 
-				} else if (coordinates.getInitialtPointIndex() == 1 && coordinates.getFinalPointIndex() == 0
-						|| coordinates.getInitialtPointIndex() == 1 && coordinates.getFinalPointIndex() == 2) {
+				} else if (coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_ONE
+						&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_ZERO
+						|| coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_ONE
+								&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_TWO) {
 
 					setControlX1(coordinates.getInitialX());
 					setControlY1(coordinates.getFinalY());
@@ -109,16 +110,20 @@ public class Connection extends AbstractLine {
 
 			} else if (coordinates.getInitialY() > coordinates.getFinalY()) {
 
-				if (coordinates.getInitialtPointIndex() == 3 && coordinates.getFinalPointIndex() == 0
-						|| coordinates.getInitialtPointIndex() == 3 && coordinates.getFinalPointIndex() == 2) {
+				if (coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_THREE
+						&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_ZERO
+						|| coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_THREE
+								&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_TWO) {
 
 					setControlX1(coordinates.getInitialX());
 					setControlY1(coordinates.getFinalY());
 					setControlX2(coordinates.getInitialX());
 					setControlY2(coordinates.getFinalY());
 
-				} else if (coordinates.getInitialtPointIndex() == 2 && coordinates.getFinalPointIndex() == 1
-						|| coordinates.getInitialtPointIndex() == 0 && coordinates.getFinalPointIndex() == 1) {
+				} else if (coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_TWO
+						&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_ONE
+						|| coordinates.getInitialtPointIndex() == ConnectionPoints.INDEX_POINT_ZERO
+								&& coordinates.getFinalPointIndex() == ConnectionPoints.INDEX_POINT_ONE) {
 
 					setControlX1(coordinates.getFinalX());
 					setControlY1(coordinates.getInitialY());
@@ -163,15 +168,15 @@ public class Connection extends AbstractLine {
 		this.arrow = arrow;
 	}
 
-	public AbstractDiagram getStartDiagramContainer() {
+	public Diagram getStartDiagramContainer() {
 		return startDiagram;
 	}
 
-	public void setStartDiagramContainer(final AbstractDiagram startDiagram) {
+	public void setStartDiagramContainer(final Diagram startDiagram) {
 		this.startDiagram = startDiagram;
 	}
 
-	public AbstractDiagram getEndDiagramContainer() {
+	public Diagram getEndDiagramContainer() {
 		return endDiagram;
 	}
 

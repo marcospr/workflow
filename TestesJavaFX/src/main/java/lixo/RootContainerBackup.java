@@ -12,18 +12,18 @@ import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandDS;
 import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandGAS;
 import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandGU;
 import br.unicamp.cepetro.unisim.mero.gui.app.command.CommandHLDG;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.AbstractDiagram;
+import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Diagram;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Arrow;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Connection;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.End;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.EndDiagram;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.LineTemporary;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.ProcessDiagram;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Processo;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Selectable;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Start;
 import br.unicamp.cepetro.unisim.mero.gui.app.diagram.StartDiagram;
 import br.unicamp.cepetro.unisim.mero.gui.app.factory.CommandFactory;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.End;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.LineTemporary;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.Processo;
+import br.unicamp.cepetro.unisim.mero.gui.app.figure.Start;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.CommandType;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.ConstantsSystem;
 import br.unicamp.cepetro.unisim.mero.gui.app.model.CoordinatesMouseXY;
@@ -60,15 +60,14 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class RootContainerBackup extends BorderPane {
 	private CoordinatesMouseXY coordinatesMouse;
 	// private Processo processoHelper;
-	private AbstractDiagram startDiagramContainer;
-	private AbstractDiagram endDiagramContainer;
+	private Diagram startDiagramContainer;
+	private Diagram endDiagramContainer;
 	private ProgressBar barra;
 	private Label status;
 	private CommandFactory commandFactory;
@@ -178,7 +177,7 @@ public class RootContainerBackup extends BorderPane {
 
 		// Handlers Button Execute
 		btnRun.setOnMousePressed(mouseEvent -> {
-			AbstractDiagram start = getStartFromContainer();
+			Diagram start = getStartFromContainer();
 			if (start != null) {
 				unSelectElement();
 				start.execute(barra);
@@ -194,20 +193,10 @@ public class RootContainerBackup extends BorderPane {
 
 				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
-				Start start =
-						new Start(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
 
-				Text texto = new Text("Start");
-				texto.fillProperty().set(Color.INDIANRED);
-				texto.setTextAlignment(TextAlignment.CENTER);
-				texto.setStyle("-fx-font-weight: bold;");
+				startDiagramContainer = new StartDiagram(mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+						commandFactory.createCommand(CommandType.Start));
 
-				startDiagramContainer = new StartDiagram(start, mouseEvent.getSceneX(),
-						mouseEvent.getSceneY(), commandFactory.createCommand(CommandType.Start));
-
-				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
-
-				startDiagramContainer.getChildren().add(texto);
 				getChildren().add(startDiagramContainer);
 			} else {
 				startDiagramContainer = null;
@@ -237,17 +226,9 @@ public class RootContainerBackup extends BorderPane {
 				coordinatesMouse.setStartTranslateX(((Button) mouseEvent.getSource()).getTranslateX());
 				coordinatesMouse.setStartTranslateY(((Button) mouseEvent.getSource()).getTranslateY());
 
-				End end = new End(mouseEvent.getSceneX(), mouseEvent.getSceneY(), ConstantsSystem.RADIUS);
-				Text texto = new Text("End");
-				texto.fillProperty().set(Color.INDIANRED);
-				texto.setTextAlignment(TextAlignment.CENTER);
-				texto.setStyle("-fx-font-weight: bold;");
-
-				startDiagramContainer = new EndDiagram(end, mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+				startDiagramContainer = new EndDiagram(mouseEvent.getSceneX(), mouseEvent.getSceneY(),
 						commandFactory.createCommand(CommandType.End));
 
-				// texto.setTranslateY(startDiagramContainer.getLayoutY() + 25);
-				startDiagramContainer.getChildren().add(texto);
 				getChildren().add(startDiagramContainer);
 			} else {
 				startDiagramContainer = null;
@@ -270,7 +251,7 @@ public class RootContainerBackup extends BorderPane {
 		// handlers Pane
 		setOnMousePressed(mouseEvent -> {
 			setCursor(Cursor.HAND);
-			AbstractDiagram diagram = getDiagramFromCoordinatesXY(mouseEvent);
+			Diagram diagram = getDiagramFromCoordinatesXY(mouseEvent);
 			if (isContainer(diagram)) {
 				startDiagramContainer = diagram;
 				endDiagramContainer = null;
@@ -283,7 +264,7 @@ public class RootContainerBackup extends BorderPane {
 		});
 
 		setOnMouseDragged(mouseEvent -> {
-			AbstractDiagram lastProcessHandled = getDiagramFromCoordinatesXY(mouseEvent);
+			Diagram lastProcessHandled = getDiagramFromCoordinatesXY(mouseEvent);
 			if (lastProcessHandled != null) {
 				changeConnection(lastProcessHandled);
 			} else {
@@ -293,7 +274,7 @@ public class RootContainerBackup extends BorderPane {
 		});
 
 		setOnMouseReleased(mouseEvent -> {
-			AbstractDiagram lastDiagramHandle = getDiagramFromCoordinatesXY(mouseEvent);
+			Diagram lastDiagramHandle = getDiagramFromCoordinatesXY(mouseEvent);
 			if (mouseEvent.isShiftDown()) {
 				endDiagramContainer = lastDiagramHandle;
 				if (startDiagramContainer != null && endDiagramContainer != null
@@ -367,7 +348,7 @@ public class RootContainerBackup extends BorderPane {
 		return null;
 	}
 
-	private AbstractDiagram getStartFromContainer() {
+	private Diagram getStartFromContainer() {
 		ObservableList<Node> nodes = getChildren();
 		StartDiagram start = null;
 		for (Node node : nodes) {
@@ -463,8 +444,8 @@ public class RootContainerBackup extends BorderPane {
 			// commandFactory.createCommand(CommandType()));
 			CommandType commandType = Enum.valueOf(CommandType.class, text.getText());
 
-			startDiagramContainer = new ProcessDiagram(process, mouseEvent.getSceneX(),
-					mouseEvent.getSceneY(), commandFactory.createCommand(commandType));
+			startDiagramContainer = new ProcessDiagram(mouseEvent.getSceneX(), mouseEvent.getSceneY(),
+					commandFactory.createCommand(commandType), texto.getText());
 
 			Image imageGear = new Image(getClass().getResourceAsStream("../resources/gear.png"));
 			ImageView imageViewGear = new ImageView(imageGear);
@@ -536,15 +517,15 @@ public class RootContainerBackup extends BorderPane {
 		}
 	}
 
-	private void createConnection(final AbstractDiagram startDiagramContainer,
-			final AbstractDiagram endDiagramContainer) {
+	private void createConnection(final Diagram startDiagramContainer,
+			final Diagram endDiagramContainer) {
 		Connection conn = new Connection(startDiagramContainer, endDiagramContainer);
 
 		getChildren().add(conn);
 		getChildren().add(conn.getArrow());
 	}
 
-	private void changeConnection(final AbstractDiagram lastDiagramHandled) {
+	private void changeConnection(final Diagram lastDiagramHandled) {
 
 		if (lastDiagramHandled != null) {
 
@@ -570,8 +551,8 @@ public class RootContainerBackup extends BorderPane {
 		boolean result = false;
 		ObservableList<Node> nodesContainerMain = getChildren();
 		for (Node node : nodesContainerMain) {
-			if (node instanceof AbstractDiagram) {
-				AbstractDiagram diagramContainer = (AbstractDiagram) node;
+			if (node instanceof Diagram) {
+				Diagram diagramContainer = (Diagram) node;
 
 				ObservableList<Node> childrens = diagramContainer.getChildren();
 				for (Node children : childrens) {
@@ -589,8 +570,8 @@ public class RootContainerBackup extends BorderPane {
 		return result;
 	}
 
-	private boolean existsConnection(final AbstractDiagram startDiagramContainer,
-			final AbstractDiagram endDiagramContainer) {
+	private boolean existsConnection(final Diagram startDiagramContainer,
+			final Diagram endDiagramContainer) {
 		boolean result = false;
 		List<Connection> connections = getConnectionsFromContainer();
 		for (Connection connection : connections) {
@@ -656,20 +637,20 @@ public class RootContainerBackup extends BorderPane {
 		return result;
 	}
 
-	public AbstractDiagram getDiagramFromCoordinatesXY(final MouseEvent mouseEvent) {
-		AbstractDiagram diagramResult = null;
+	public Diagram getDiagramFromCoordinatesXY(final MouseEvent mouseEvent) {
+		Diagram diagramResult = null;
 		ObservableList<Node> nodes = getChildren();
 		// List<Node> nodesFound = new ArrayList<>();
 
 		for (Node node : nodes) {
-			if (node instanceof AbstractDiagram) {
+			if (node instanceof Diagram) {
 				Bounds bounds = node.getBoundsInParent();
 				// verifica coordenadas do mouse
 				if (bounds != null && mouseEvent.getX() <= bounds.getMaxX()
 						&& mouseEvent.getY() <= bounds.getMaxY() && mouseEvent.getX() >= bounds.getMinX()
 						&& mouseEvent.getY() >= bounds.getMinY()) {
 
-					diagramResult = (AbstractDiagram) node;
+					diagramResult = (Diagram) node;
 					break;
 				}
 			}
@@ -683,11 +664,11 @@ public class RootContainerBackup extends BorderPane {
 	}
 
 	private Boolean isContainer(final Node node) {
-		return node instanceof AbstractDiagram;
+		return node instanceof Diagram;
 	}
 
 	private void correctBordersIfNecessary(final MouseEvent mouseEvent,
-			final AbstractDiagram diagram) {
+			final Diagram diagram) {
 		if (!mouseEvent.isShiftDown()) {
 			if (diagram != null) {
 				double mouseSceneX = mouseEvent.getSceneX();
