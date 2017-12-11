@@ -79,7 +79,7 @@
 					<target>1.8</target>
 					<archive>
 						<manifest>
-							<mainClass>br.unicamp.cepetro.unisim.mero.gui.app.MainApplication</mainClass>
+							<mainClass>br.unicamp.cepetro.unisim.mero.ui.app.MainApplication</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

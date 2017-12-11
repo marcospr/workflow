@@ -2,7 +2,7 @@ package lixo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import br.unicamp.cepetro.unisim.mero.gui.app.controller.MainController;
+import br.unicamp.cepetro.unisim.mero.ui.app.controller.MainController;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 

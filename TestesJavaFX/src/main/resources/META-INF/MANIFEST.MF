@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: br.unicamp.cepetro.unisim.mero.gui.app.MainApplication
+Main-Class: br.unicamp.cepetro.unisim.mero.ui.app.MainApplication
 

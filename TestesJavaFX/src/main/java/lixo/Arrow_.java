@@ -1,8 +1,8 @@
 package lixo;
 
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Connection;
-import br.unicamp.cepetro.unisim.mero.gui.app.diagram.Selectable;
-import br.unicamp.cepetro.unisim.mero.gui.app.model.CoordinatesXYInitialFinal;
+import br.unicamp.cepetro.unisim.mero.ui.app.diagram.Connection;
+import br.unicamp.cepetro.unisim.mero.ui.app.diagram.Selectable;
+import br.unicamp.cepetro.unisim.mero.ui.app.model.CoordinatesXYInitialFinal;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
